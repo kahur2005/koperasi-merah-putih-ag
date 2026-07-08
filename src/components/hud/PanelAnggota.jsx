@@ -27,6 +27,8 @@ export default function PanelAnggota() {
     handleClose();
   };
 
+  const personName = selectedNpc.nama || selectedNpc.name || 'Warga Desa';
+
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content glass-card" onClick={(e) => e.stopPropagation()}>
@@ -38,11 +40,11 @@ export default function PanelAnggota() {
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center', margin: '16px 0' }}>
           <img 
             src={selectedNpc.avatar} 
-            alt={selectedNpc.name} 
+            alt={personName} 
             style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--accent-yellow)' }} 
           />
           <div>
-            <h3 style={{ fontSize: '20px', marginBottom: '4px' }}>{selectedNpc.name}</h3>
+            <h3 style={{ fontSize: '20px', marginBottom: '4px' }}>{personName}</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>{selectedNpc.pekerjaan}</p>
           </div>
         </div>

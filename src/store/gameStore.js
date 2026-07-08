@@ -22,6 +22,27 @@ const clamp = (val, min = 0, max = 100) => Math.max(min, Math.min(max, val));
 let _uid = 0;
 const uid = () => `${Date.now()}-${++_uid}`;
 
+const displayName = (person) => person?.nama || person?.name || person?.memberName || person?.namaAnggota || 'Warga Desa';
+
+const storyMomentPatch = (state, id, moment) => {
+  if (state.storyFlags[id]) return {};
+
+  const storyMoment = {
+    id,
+    tone: 'normal',
+    ...moment,
+  };
+  const nextQueue = state.currentStoryMoment
+    ? [...state.storyQueue, storyMoment]
+    : state.storyQueue;
+
+  return {
+    storyFlags: { ...state.storyFlags, [id]: true },
+    currentStoryMoment: state.currentStoryMoment || storyMoment,
+    storyQueue: nextQueue,
+  };
+};
+
 // ─── Initial state factory ────────────────────────────────────────────────────
 const createInitialState = () => ({
   // Time
@@ -85,10 +106,14 @@ const createInitialState = () => ({
   // UI state
   currentView: 'dashboard',
   activeModal: null,
+  storyIntroSeen: false,
   notifications: [],
   selectedNpc: null,
   selectedLoan: null,
   dayReport: null,
+  currentStoryMoment: null,
+  storyQueue: [],
+  storyFlags: {},
 
   // Statistics
   statistics: {
@@ -115,6 +140,41 @@ export const useGameStore = create((set, get) => ({
 
   /** 2. setActiveModal */
   setActiveModal: (modal) => set({ activeModal: modal }),
+
+  /** 2b. completeStoryIntro */
+  completeStoryIntro: () =>
+    set((state) => ({
+      storyIntroSeen: true,
+      ...storyMomentPatch(state, 'welcome_mission', {
+        speaker: 'Bu Siti',
+        title: 'Buku kerja sudah siap',
+        text: 'Mulai dari toko kecil dulu. Pasang kasir, beli stok, lalu akhiri hari untuk melihat dampaknya pada warga.',
+        avatar: '/assets/avatars/female_1_siti.jpg',
+        actionLabel: 'Masuk Toko',
+        actionView: 'store3d',
+      }),
+    })),
+
+  /** 2c. dismissStoryMoment */
+  dismissStoryMoment: () =>
+    set((state) => {
+      const [nextMoment, ...remainingQueue] = state.storyQueue;
+      return {
+        currentStoryMoment: nextMoment || null,
+        storyQueue: remainingQueue,
+      };
+    }),
+
+  /** 2d. openStoryMoment */
+  openStoryMoment: (moment) =>
+    set((state) => ({
+      currentStoryMoment: {
+        id: uid(),
+        tone: 'normal',
+        ...moment,
+      },
+      storyQueue: state.storyQueue,
+    })),
 
   /** 3. setSelectedNpc */
   setSelectedNpc: (npc) => set({ selectedNpc: npc }),
@@ -166,8 +226,18 @@ export const useGameStore = create((set, get) => ({
         stockCapacity: newStockCapacity,
         notifications: [
           ...state.notifications,
-          { id: uid(), text: `${npc.name} telah diterima sebagai anggota koperasi!` },
+          { id: uid(), text: `${displayName(npc)} telah diterima sebagai anggota koperasi!` },
         ],
+        ...storyMomentPatch(state, `member_${newMemberCount}`, {
+          speaker: displayName(npc),
+          title: newMemberCount === 1 ? 'Anggota pertama bergabung' : 'Kepercayaan mulai tumbuh',
+          text: newMemberCount === 1
+            ? 'Saya ikut koperasi karena ingin harga yang adil dan tempat usaha kecil bisa dibantu.'
+            : `Sekarang sudah ${newMemberCount} anggota. Semakin ramai, semakin kuat simpanan dan jaringan koperasi.`,
+          avatar: npc.avatar,
+          actionLabel: 'Lihat Buku Kerja',
+          actionModal: 'kalender',
+        }),
       };
     }),
 
@@ -223,9 +293,20 @@ export const useGameStore = create((set, get) => ({
           ...state.notifications,
           {
             id: uid(),
-            text: `Pinjaman Rp ${loanReq.jumlahPinjaman.toLocaleString('id-ID')} untuk ${loanReq.memberName} disetujui (bunga ${bungaPersen}%).`,
+            text: `Pinjaman Rp ${loanReq.jumlahPinjaman.toLocaleString('id-ID')} untuk ${displayName(loanReq)} disetujui (bunga ${bungaPersen}%).`,
           },
         ],
+        ...storyMomentPatch(state, `loan_approved_${state.statistics.totalLoansGiven + 1}`, {
+          speaker: displayName(loanReq),
+          title: 'Modal usaha disalurkan',
+          text: bungaPersen <= 5
+            ? 'Bunga ringan membuat kami berani berkembang. Kalau usaha jalan, pasokan desa juga ikut kuat.'
+            : 'Terima kasih pinjamannya. Bunganya terasa berat, jadi kepercayaan warga perlu dijaga dari sisi lain.',
+          avatar: loanReq.avatar || '/assets/avatars/male_2_ahmad.jpg',
+          tone: bungaPersen <= 5 ? 'success' : 'warning',
+          actionLabel: 'Pantau Pinjaman',
+          actionModal: 'pinjamanAktifList',
+        }),
       };
     }),
 
@@ -286,6 +367,17 @@ export const useGameStore = create((set, get) => ({
         purchasePrices: newPurchasePrices,
         happiness: newHappiness,
         boughtFromUMKMToday: newBoughtFromUMKM,
+        ...(!isPT
+          ? storyMomentPatch(state, 'first_umkm_purchase', {
+              speaker: 'Pak Dedi',
+              title: 'UMKM desa ikut bergerak',
+              text: 'Koperasi yang membeli dari UMKM membuat uang berputar di desa. Harganya bisa naik turun, tapi dampaknya besar untuk warga.',
+              avatar: '/assets/avatars/male_4_dedi.jpg',
+              tone: 'success',
+              actionLabel: 'Atur Harga',
+              actionModal: 'harga',
+            })
+          : {}),
       };
     }),
 
@@ -379,8 +471,18 @@ export const useGameStore = create((set, get) => ({
         placementMode: null,
         notifications: [
           ...state.notifications,
-          { id: uid(), text: `Membeli ${def.name || type} untuk toko!` },
+          { id: uid(), text: `Membeli ${def.label || def.name || type} untuk toko!` },
         ],
+        ...storyMomentPatch(state, `furniture_${type}`, {
+          speaker: 'Bu Siti',
+          title: type === 'cashier' ? 'Kasir siap melayani' : 'Toko makin lengkap',
+          text: type === 'cashier'
+            ? 'Dengan kasir, warga bisa mulai berbelanja setiap hari. Sekarang stok dan harga jadi keputusan penting.'
+            : `${def.label || 'Furnitur baru'} membantu koperasi melayani lebih rapi dan nyaman.`,
+          avatar: '/assets/avatars/female_1_siti.jpg',
+          actionLabel: 'Buka Pasar',
+          actionModal: 'pasar',
+        }),
       };
     }),
 
@@ -407,6 +509,15 @@ export const useGameStore = create((set, get) => ({
           ...state.notifications,
           { id: uid(), text: 'Toko telah di-upgrade ke ukuran besar!' },
         ],
+        ...storyMomentPatch(state, 'store_upgraded', {
+          speaker: 'Pak Budi',
+          title: 'Koperasi naik kelas',
+          text: 'Toko yang lebih besar berarti warga makin bergantung pada pengurus. Isi kapasitasnya dengan pasokan yang stabil.',
+          avatar: '/assets/avatars/male_1_budi.jpg',
+          tone: 'success',
+          actionLabel: 'Buka Pasar',
+          actionModal: 'pasar',
+        }),
       };
     }),
 
@@ -563,6 +674,27 @@ export const useGameStore = create((set, get) => ({
           ...state.statistics,
           totalItemsSold: state.statistics.totalItemsSold + totalItemsSoldToday,
         },
+        ...(dayReport.gagalPanenTriggered
+          ? storyMomentPatch(state, `harvest_missed_${state.dayNumber}`, {
+              speaker: 'Pak Budi',
+              title: 'Warga kecewa pada hari gagal panen',
+              text: 'Saat sawah gagal panen, koperasi perlu hadir lebih dulu untuk petani. Besok, utamakan belanja UMKM saat peringatan muncul.',
+              avatar: '/assets/avatars/male_1_budi.jpg',
+              tone: 'danger',
+              actionLabel: 'Buka Pasar',
+              actionModal: 'pasar',
+            })
+          : totalItemsSoldToday >= 10
+            ? storyMomentPatch(state, 'first_busy_day', {
+                speaker: 'Bu Rina',
+                title: 'Toko mulai ramai',
+                text: 'Penjualan harian menunjukkan warga mulai memakai koperasi. Jaga ritme stok agar mereka tidak kembali ke toko besar.',
+                avatar: '/assets/avatars/female_3_rina.jpg',
+                tone: 'success',
+                actionLabel: 'Lihat Buku Kerja',
+                actionModal: 'kalender',
+              })
+            : {}),
       };
     }),
 
@@ -760,7 +892,7 @@ export const useGameStore = create((set, get) => ({
 
       // Activate Krisis if today is the start day
       if (state.dayNumber === newKrisisStartDay && newKrisisDaysRemaining <= 0) {
-        newKrisisDaysRemaining = EVENTS?.KRISIS_EKONOMI?.duration || 7;
+        newKrisisDaysRemaining = EVENTS?.KRISIS_EKONOMI?.durationDays || 7;
         if (!newActiveEvents.some((e) => e.type === 'krisisEkonomi')) {
           newActiveEvents.push({
             type: 'krisisEkonomi',
@@ -785,6 +917,49 @@ export const useGameStore = create((set, get) => ({
         monthlyNotifications.push({
           id: uid(),
           text: '🌾 GAGAL PANEN! Pastikan membeli dari UMKM hari ini untuk mendukung petani lokal!',
+        });
+      }
+
+      let storyPatch = {};
+      if (state.dayNumber === newKrisisStartDay) {
+        storyPatch = storyMomentPatch(state, `krisis_${state.dayNumber}`, {
+          speaker: 'Dewan Pengawas',
+          title: 'Krisis ekonomi dimulai',
+          text: 'Harga sedang menekan warga. Selama krisis, turunkan margin agar kebahagiaan tidak runtuh.',
+          avatar: '/assets/avatars/female_2_dewi.jpg',
+          tone: 'danger',
+          actionLabel: 'Atur Harga',
+          actionModal: 'harga',
+        });
+      } else if (state.dayNumber === newGagalPanenDay) {
+        storyPatch = storyMomentPatch(state, `gagal_panen_${state.dayNumber}`, {
+          speaker: 'Pak Budi',
+          title: 'Sawah desa gagal panen',
+          text: 'Petani butuh koperasi hari ini. Beli dari UMKM agar dukungan terasa langsung dan warga tetap percaya.',
+          avatar: '/assets/avatars/male_1_budi.jpg',
+          tone: 'warning',
+          actionLabel: 'Buka Pasar',
+          actionModal: 'pasar',
+        });
+      } else if (newPendingLoanRequests.length > state.pendingLoanRequests.length) {
+        const loanReq = newPendingLoanRequests[newPendingLoanRequests.length - 1];
+        storyPatch = storyMomentPatch(state, `loan_request_${state.dayNumber}`, {
+          speaker: displayName(loanReq),
+          title: 'Pengajuan modal usaha',
+          text: `${displayName(loanReq)} mengajukan pinjaman untuk ${loanReq.alasan}. Pilih bunga yang membantu usaha tetap hidup.`,
+          avatar: loanReq.avatar || '/assets/avatars/male_2_ahmad.jpg',
+          actionLabel: 'Tinjau Pinjaman',
+          actionModal: 'pinjamanAktifList',
+        });
+      } else if (newPendingApplications.length > state.pendingApplications.length) {
+        const applicant = newPendingApplications[newPendingApplications.length - 1];
+        storyPatch = storyMomentPatch(state, `application_${state.dayNumber}`, {
+          speaker: displayName(applicant),
+          title: 'Calon anggota menunggu',
+          text: 'Saya ingin ikut koperasi supaya simpanan dan kebutuhan usaha lebih jelas. Mohon ditinjau, Pengurus.',
+          avatar: applicant.avatar,
+          actionLabel: 'Lihat Anggota',
+          actionModal: 'pinjamanAktifList',
         });
       }
 
@@ -874,6 +1049,7 @@ export const useGameStore = create((set, get) => ({
           ...state.notifications,
           ...monthlyNotifications,
         ],
+        ...storyPatch,
       };
     }),
 

@@ -15,6 +15,7 @@ export default function PanelPinjaman() {
   const setSelectedLoan = useGameStore((s) => s.setSelectedLoan);
 
   const [bunga, setBunga] = useState(5); // Default interest rate 5%
+  const getPersonName = (person) => person?.nama || person?.name || person?.memberName || person?.namaAnggota || 'Warga Desa';
 
   const handleClose = () => {
     setActiveModal(null);
@@ -40,6 +41,7 @@ export default function PanelPinjaman() {
 
     // Find the NPC avatar
     const avatar = selectedLoan.avatar || '/assets/avatars/male_1_budi.jpg';
+    const loanName = getPersonName(selectedLoan);
 
     return (
       <div className="modal-overlay" onClick={handleClose}>
@@ -52,12 +54,12 @@ export default function PanelPinjaman() {
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center', margin: '12px 0' }}>
             <img 
               src={avatar} 
-              alt={selectedLoan.namaAnggota} 
+              alt={loanName} 
               style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--accent-yellow)' }} 
             />
             <div>
-              <h3 style={{ fontSize: '18px', marginBottom: '2px' }}>{selectedLoan.namaAnggota}</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>{selectedLoan.pekerjaanAnggota}</p>
+              <h3 style={{ fontSize: '18px', marginBottom: '2px' }}>{loanName}</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>{selectedLoan.pekerjaanAnggota || selectedLoan.pekerjaan || 'Anggota Koperasi'}</p>
               <p style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{UI.PENDAPATAN_BULANAN}: <span style={{ color: 'var(--accent-green)', fontWeight: '600' }}>{formatRupiah(selectedLoan.pendapatanBulanan)}</span></p>
             </div>
           </div>
@@ -69,7 +71,7 @@ export default function PanelPinjaman() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>
               <span style={{ color: 'var(--text-secondary)' }}>{UI.TUJUAN_PINJAMAN}</span>
-              <span style={{ fontWeight: '500', maxWidth: '60%', textAlign: 'right' }}>{selectedLoan.tujuanPinjaman}</span>
+              <span style={{ fontWeight: '500', maxWidth: '60%', textAlign: 'right' }}>{selectedLoan.tujuanPinjaman || selectedLoan.alasan}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>
               <span style={{ color: 'var(--text-secondary)' }}>{UI.TENOR}</span>
@@ -172,7 +174,7 @@ export default function PanelPinjaman() {
                     <div key={m.id} className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', flex: '1 0 200px' }}>
                       <img src={m.avatar} alt={m.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '12px', fontWeight: '600' }}>{m.name}</span>
+                        <span style={{ fontSize: '12px', fontWeight: '600' }}>{getPersonName(m)}</span>
                         <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>{m.pekerjaan}</span>
                       </div>
                     </div>
@@ -195,7 +197,7 @@ export default function PanelPinjaman() {
                     return (
                       <div key={l.id} className="glass-card" style={{ padding: '12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                          <span style={{ fontSize: '13px', fontWeight: '700' }}>{l.namaAnggota}</span>
+                          <span style={{ fontSize: '13px', fontWeight: '700' }}>{getPersonName(l)}</span>
                           <span style={{ fontSize: '11px', color: 'var(--accent-orange)' }}>Sisa {l.sisaBulan} dari {l.tenorBulan} bulan</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>

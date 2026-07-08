@@ -40,15 +40,14 @@ export default function TopBar() {
           <span>😊</span>
           <span>{happiness}%</span>
         </div>
-        <div 
-          className="stat-pill" 
-          style={{ cursor: 'pointer' }} 
+        <button
+          className="stat-pill stat-button" 
           onClick={() => setActiveModal('pinjamanAktifList')} // Open member/active loan detail
           title={UI.ANGGOTA}
         >
           <img src="/assets/images/icon_anggota.png" alt="Anggota" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
           <span>{memberCount}</span>
-        </div>
+        </button>
       </div>
 
       {/* Saldo / Money */}

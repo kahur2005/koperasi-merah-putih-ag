@@ -26,15 +26,15 @@ const SplitWall = ({ position, rotation, length, height, hasDoor, hasText, wallT
         <>
           <mesh position={[0, height * 0.75, 0]} receiveShadow>
             <boxGeometry args={[length, height * 0.5, 0.2]} />
-            <meshStandardMaterial color="#EF4444" roughness={0.9} />
+            <meshStandardMaterial color="#B91C1C" roughness={0.82} />
           </mesh>
           <mesh position={[-(length/4 + 1), height * 0.25, 0]} receiveShadow>
             <boxGeometry args={[length/2 - 2, height * 0.5, 0.2]} />
-            <meshStandardMaterial color="#FFFFFF" roughness={0.9} />
+            <meshStandardMaterial color="#F8F3E8" roughness={0.9} />
           </mesh>
           <mesh position={[(length/4 + 1), height * 0.25, 0]} receiveShadow>
             <boxGeometry args={[length/2 - 2, height * 0.5, 0.2]} />
-            <meshStandardMaterial color="#FFFFFF" roughness={0.9} />
+            <meshStandardMaterial color="#F8F3E8" roughness={0.9} />
           </mesh>
           
           <group position={[0, height * 0.25, 0]}>
@@ -87,11 +87,11 @@ const SplitWall = ({ position, rotation, length, height, hasDoor, hasText, wallT
         <>
           <mesh position={[0, height * 0.75, 0]} receiveShadow>
             <boxGeometry args={[length, height * 0.5, 0.2]} />
-            <meshStandardMaterial color="#EF4444" roughness={0.9} />
+            <meshStandardMaterial color="#B91C1C" roughness={0.82} />
           </mesh>
           <mesh position={[0, height * 0.25, 0]} receiveShadow>
             <boxGeometry args={[length, height * 0.5, 0.2]} />
-            <meshStandardMaterial color="#FFFFFF" roughness={0.9} />
+            <meshStandardMaterial color="#F8F3E8" roughness={0.9} />
           </mesh>
         </>
       )}
@@ -131,10 +131,10 @@ export default function StoreFloor({ onPointerMove, onClick, onDoubleClick }) {
         onDoubleClick={onDoubleClick}
       >
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color="#FFFFFF" roughness={0.8} />
+        <meshStandardMaterial color="#D8D1C3" roughness={0.85} />
       </mesh>
 
-      <gridHelper args={[Math.max(width, depth), Math.max(width, depth), '#E2E8F0', '#F1F5F9']} position={[0, 0, 0]} />
+      <gridHelper args={[Math.max(width, depth), Math.max(width, depth), '#F8F3E8', '#B7A992']} position={[0, 0, 0]} />
 
       <SplitWall 
         position={[0, 0, -depth / 2]} 
