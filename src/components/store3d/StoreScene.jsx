@@ -104,17 +104,17 @@ export default function StoreScene() {
           onClick={handleFloorClick}
           onDoubleClick={handleFloorDoubleClick}
         >
-          <color attach="background" args={['#ffffff']} />
+          <color attach="background" args={['#eef4e8']} />
           
           {/* Lighting */}
-          <ambientLight intensity={0.6} />
+          <ambientLight intensity={0.75} />
           <directionalLight 
             position={[8, 12, 5]} 
-            intensity={1.2} 
+            intensity={1.35} 
             castShadow 
             shadow-mapSize={[1024, 1024]}
           />
-          <directionalLight position={[-8, 6, -5]} intensity={0.4} />
+          <directionalLight position={[-8, 6, -5]} intensity={0.5} />
 
           {/* Controls */}
           <OrbitControls 

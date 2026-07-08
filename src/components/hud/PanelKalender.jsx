@@ -2,50 +2,47 @@ import React from 'react';
 import dayjs from 'dayjs';
 import { useGameStore } from '../../store/gameStore';
 import { UI } from '../../constants/uiStrings';
+import { WIN_CONDITIONS } from '../../constants/gameConstants';
+import { getChapterProgress } from '../../data/storyChapters';
+import { formatRupiah } from '../../utils/formatRupiah';
 
 export default function PanelKalender() {
+  const snapshot = useGameStore((s) => s);
   const currentDate = useGameStore((s) => s.currentDate);
   const dayNumber = useGameStore((s) => s.dayNumber);
-  const activeEvents = useGameStore((s) => s.activeEvents);
+  const money = useGameStore((s) => s.money);
+  const memberCount = useGameStore((s) => s.memberCount);
+  const happiness = useGameStore((s) => s.happiness);
   const gagalPanenDay = useGameStore((s) => s.gagalPanenDay);
   const krisisStartDay = useGameStore((s) => s.krisisStartDay);
   const setActiveModal = useGameStore((s) => s.setActiveModal);
+  const { activeChapter, chapters } = getChapterProgress(snapshot);
 
   const current = dayjs(currentDate);
   const currentMonthIdx = current.month();
   const currentYear = current.year();
   const daysInMonth = current.daysInMonth();
   const firstDayOfMonth = current.startOf('month');
-  const startOffset = firstDayOfMonth.day(); // 0 = Sunday, 1 = Monday, etc.
-
-  const handleClose = () => {
-    setActiveModal(null);
-  };
-
+  const startOffset = firstDayOfMonth.day();
   const daysOfWeek = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
-  // Build calendar cells
   const cells = [];
-  // Offset cells
   for (let i = 0; i < startOffset; i++) {
     cells.push({ dayOfMonth: null, cellDayNumber: null });
   }
-  // Days of month cells
   for (let d = 1; d <= daysInMonth; d++) {
     const dayDiff = d - current.date();
     const cellDayNumber = dayNumber + dayDiff;
     cells.push({ dayOfMonth: d, cellDayNumber });
   }
 
-  // Get active events or upcoming event descriptions
-  const eventsList = [];
   const startDayOfMonth = dayNumber - current.date() + 1;
   const endDayOfMonth = startDayOfMonth + daysInMonth - 1;
+  const eventsList = [];
 
   if (gagalPanenDay >= startDayOfMonth && gagalPanenDay <= endDayOfMonth) {
     const isToday = gagalPanenDay === dayNumber;
     eventsList.push({
-      type: 'gagal_panen',
       title: `${UI.GAGAL_PANEN} (Tanggal ${gagalPanenDay - startDayOfMonth + 1})`,
       desc: UI.GAGAL_PANEN_DESC,
       status: isToday ? 'SEDANG AKTIF' : 'MENDATANG',
@@ -57,7 +54,6 @@ export default function PanelKalender() {
     const krisisEnd = krisisStartDay + 7 - 1;
     const isCurrentlyActive = dayNumber >= krisisStartDay && dayNumber <= krisisEnd;
     eventsList.push({
-      type: 'krisis',
       title: `${UI.KRISIS_EKONOMI} (Tanggal ${krisisStartDay - startDayOfMonth + 1} - ${krisisEnd - startDayOfMonth + 1})`,
       desc: UI.KRISIS_EKONOMI_DESC,
       status: isCurrentlyActive ? 'SEDANG AKTIF' : 'MENDATANG',
@@ -65,102 +61,136 @@ export default function PanelKalender() {
     });
   }
 
+  const targetMoney = WIN_CONDITIONS.MONEY || 10_000_000;
+  const targetMembers = WIN_CONDITIONS.MEMBERS || 8;
+  const targetHappiness = WIN_CONDITIONS.HAPPINESS || 60;
+  const monthProgress = Math.round((current.date() / daysInMonth) * 100);
+  const targetCards = [
+    { label: 'Kas', value: formatRupiah(money), target: formatRupiah(targetMoney), progress: Math.min(100, Math.round((money / targetMoney) * 100)) },
+    { label: 'Anggota', value: memberCount, target: targetMembers, progress: Math.min(100, Math.round((memberCount / targetMembers) * 100)) },
+    { label: 'Bahagia', value: `${happiness}%`, target: `${targetHappiness}%`, progress: Math.min(100, Math.round((happiness / targetHappiness) * 100)) },
+  ];
+
+  const handleClose = () => {
+    setActiveModal(null);
+  };
+
   return (
     <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content glass-card" style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content planner-modal" onClick={(event) => event.stopPropagation()}>
         <div className="modal-header">
-          <h2>{UI.KALENDER_ACARA}</h2>
+          <div>
+            <span className="panel-kicker">Buku Kerja Pengurus</span>
+            <h2>{UI.KALENDER_ACARA}</h2>
+          </div>
           <button className="modal-close" onClick={handleClose}>&times;</button>
         </div>
 
-        {/* Month Header */}
-        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '700' }}>
-            {UI.BULAN_NAMES[currentMonthIdx]} {currentYear}
-          </h3>
-          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            Hari Ke-{dayNumber} dalam tahun
-          </span>
+        <div className="planner-summary">
+          <div>
+            <h3>{UI.BULAN_NAMES[currentMonthIdx]} {currentYear}</h3>
+            <span>Hari Ke-{dayNumber} dalam tahun</span>
+          </div>
+          <div className="planner-progress" aria-label={`Bulan berjalan ${monthProgress}%`}>
+            <span style={{ width: `${monthProgress}%` }} />
+          </div>
         </div>
 
-        {/* Days of Week Header */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center', fontWeight: '700', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-          {daysOfWeek.map((day) => (
-            <div key={day}>{day}</div>
+        <div className="planner-targets">
+          {targetCards.map((card) => (
+            <div className="planner-target-card" key={card.label}>
+              <span>{card.label}</span>
+              <strong>{card.value}</strong>
+              <small>Target {card.target}</small>
+              <div className="planner-target-bar">
+                <span style={{ width: `${card.progress}%` }} />
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* Calendar Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center', fontSize: '14px', marginBottom: '24px' }}>
-          {cells.map((cell, idx) => {
-            const { dayOfMonth, cellDayNumber } = cell;
-
-            if (!dayOfMonth) {
-              return <div key={`empty-${idx}`} style={{ height: '36px' }}></div>;
-            }
-
-            const isToday = cellDayNumber === dayNumber;
-            const isGagalPanen = cellDayNumber === gagalPanenDay;
-            const isKrisis = cellDayNumber >= krisisStartDay && cellDayNumber < krisisStartDay + 7;
-
-            // Highlight border if active or target day
-            let cellStyle = {
-              height: '36px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '6px',
-              position: 'relative',
-              background: 'rgba(30, 41, 59, 0.4)',
-              border: '1px solid transparent',
-              fontWeight: '500',
-            };
-
-            if (isToday) {
-              cellStyle.border = '2px solid var(--accent-blue)';
-              cellStyle.fontWeight = '700';
-              cellStyle.background = 'rgba(59, 130, 246, 0.2)';
-            }
-
-            return (
-              <div key={dayOfMonth} style={cellStyle}>
-                {dayOfMonth}
-                {/* Event indicators (dots) */}
-                <div style={{ position: 'absolute', bottom: '2px', display: 'flex', gap: '2px' }}>
-                  {isGagalPanen && (
-                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--accent-orange)' }}></div>
-                  )}
-                  {isKrisis && (
-                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--accent-red)' }}></div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+        <div className="planner-chapters" aria-label="Kemajuan bab cerita">
+          {chapters.map((chapter) => (
+            <div
+              key={chapter.id}
+              className={[
+                'planner-chapter',
+                chapter.complete ? 'is-complete' : '',
+                chapter.id === activeChapter.id ? 'is-active' : '',
+              ].filter(Boolean).join(' ')}
+            >
+              <span>Bab {chapter.number}</span>
+              <strong>{chapter.title}</strong>
+              <div><i style={{ width: `${chapter.progress}%` }} /></div>
+            </div>
+          ))}
         </div>
 
-        {/* Upcoming Events List */}
-        <div>
-          <h4 style={{ fontSize: '13px', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
-            {UI.ACARA_KHUSUS} Bulan Ini
-          </h4>
-          {eventsList.length === 0 ? (
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center', padding: '12px' }}>
-              Tidak ada acara khusus terjadwal bulan ini.
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {eventsList.map((ev, idx) => (
-                <div key={idx} style={{ padding: '10px', background: 'rgba(15,23,42,0.3)', borderRadius: '8px', borderLeft: `3px solid ${ev.color}` }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: '700', color: ev.color }}>{ev.title}</span>
-                    <span style={{ fontSize: '9px', fontWeight: '700', padding: '2px 6px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)' }}>{ev.status}</span>
-                  </div>
-                  <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.3' }}>{ev.desc}</p>
-                </div>
+        <div className="planner-body">
+          <div>
+            <div className="planner-weekdays">
+              {daysOfWeek.map((day) => (
+                <div key={day}>{day}</div>
               ))}
             </div>
-          )}
+
+            <div className="planner-grid">
+              {cells.map((cell, idx) => {
+                if (!cell.dayOfMonth) {
+                  return <div key={`empty-${idx}`} className="planner-day is-empty" />;
+                }
+
+                const isToday = cell.cellDayNumber === dayNumber;
+                const isGagalPanen = cell.cellDayNumber === gagalPanenDay;
+                const isKrisis = krisisStartDay != null && cell.cellDayNumber >= krisisStartDay && cell.cellDayNumber < krisisStartDay + 7;
+                const className = [
+                  'planner-day',
+                  isToday ? 'is-today' : '',
+                  isGagalPanen ? 'has-harvest' : '',
+                  isKrisis ? 'has-crisis' : '',
+                ].filter(Boolean).join(' ');
+
+                return (
+                  <div key={cell.dayOfMonth} className={className}>
+                    <span>{cell.dayOfMonth}</span>
+                    <div className="planner-dots">
+                      {isGagalPanen && <span className="dot-harvest" />}
+                      {isKrisis && <span className="dot-crisis" />}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <aside className="planner-memo">
+            <h3>Memo</h3>
+            <p>
+              Pantau tanggal rawan dan target akhir tahun. Keputusan harian akan terasa kecil, tapi efeknya menumpuk pada kas, anggota, dan kebahagiaan.
+            </p>
+
+            <h4>{UI.ACARA_KHUSUS} Bulan Ini</h4>
+            {eventsList.length === 0 ? (
+              <div className="planner-empty">Tidak ada acara khusus terjadwal bulan ini.</div>
+            ) : (
+              <div className="planner-events">
+                {eventsList.map((event, idx) => (
+                  <div key={idx} className="planner-event" style={{ borderLeftColor: event.color }}>
+                    <div>
+                      <strong style={{ color: event.color }}>{event.title}</strong>
+                      <span>{event.status}</span>
+                    </div>
+                    <p>{event.desc}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="planner-legend">
+              <span><i className="dot-harvest" /> Gagal panen</span>
+              <span><i className="dot-crisis" /> Krisis ekonomi</span>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
