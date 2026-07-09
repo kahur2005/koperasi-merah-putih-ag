@@ -35,8 +35,6 @@
 
   /* Back-compat aliases so untouched rules keep working until rethemed.
      Later tasks migrate rules off these; remove aliases in Task 10. */
-  --bg-card: var(--paper);
-  --bg-card-hover: var(--paper-2);
   --text-primary: var(--ink);
   --text-secondary: var(--ink-soft);
   --text-inverse: var(--ink-inverse);
@@ -45,8 +43,6 @@
   --card-border: var(--wood-dark);
   --border: rgba(58, 36, 18, 0.35);
   --accent-yellow: var(--accent-gold);
-  --font-sans: var(--font-pixel);
-  --shadow-lg: var(--pixel-shadow);
   --bg-primary: #241a10;
   --bg-secondary: #3a2a18;
   --bg-panel: #2c2013;
@@ -631,7 +627,7 @@ input:focus-visible {
   font-size: 17px;
   font-weight: 700;
   padding: 10px 24px;
-  box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.4);
+  box-shadow: var(--pixel-shadow-sm);
 }
 
 .date-badge {
@@ -1175,14 +1171,14 @@ input:focus-visible {
 .planner-chapter div {
   height: 6px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: 0;
   background: #e3d4bd;
 }
 
 .planner-chapter i {
   display: block;
   height: 100%;
-  border-radius: inherit;
+  border-radius: 0;
   background: var(--accent-green);
 }
 
@@ -1404,21 +1400,21 @@ input:focus-visible {
 }
 
 .carousel-arrow {
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid var(--border);
-  color: var(--text-inverse);
+  background: var(--wood-dark);
+  border: 3px solid var(--wood-dark);
+  color: var(--ink-inverse);
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: none;
 }
 
 .carousel-arrow:hover {
-  background: #334155;
+  background: var(--wood-mid);
 }
 
 .carousel-dots {
@@ -1431,11 +1427,11 @@ input:focus-visible {
 .carousel-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: 0;
   background: var(--text-secondary);
   opacity: 0.4;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: none;
 }
 
 .carousel-dot.active {

@@ -54,7 +54,7 @@ export default function PanelPinjaman() {
             <img 
               src={avatar} 
               alt={loanName} 
-              style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--accent-yellow)' }} 
+              style={{ width: '80px', height: '80px', borderRadius: '0', objectFit: 'cover', border: '3px solid var(--wood-dark)' }}
             />
             <div>
               <h3 style={{ fontSize: '18px', marginBottom: '2px' }}>{loanName}</h3>
@@ -83,13 +83,13 @@ export default function PanelPinjaman() {
             </div>
           </div>
 
-          <div style={{ padding: '8px 12px', background: 'rgba(15,23,42,0.5)', borderRadius: '8px', fontSize: '11px', marginBottom: '12px', borderLeft: '3px solid var(--accent-orange)' }}>
+          <div className="info-note" style={{ fontSize: '11px', borderLeft: '8px solid var(--accent-orange)' }}>
             <span style={{ fontWeight: '700' }}>{UI.EFEK}: </span>
             <span style={{ color: 'var(--accent-green)' }}>Menambah pasokan UMKM +5 dan menurunkan harga 2% saat pinjaman lunas.</span>
           </div>
 
           {/* Payment calculation breakdown */}
-          <div className="glass-card" style={{ background: 'rgba(15,23,42,0.3)', marginBottom: '16px', padding: '12px' }}>
+          <div className="glass-card" style={{ marginBottom: '16px', padding: '12px' }}>
             <h4 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '8px' }}>{UI.PERHITUNGAN_CICILAN}</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -144,14 +144,14 @@ export default function PanelPinjaman() {
             <div>
               <h3 style={{ fontSize: '15px', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Daftar Anggota Koperasi ({members.length})</h3>
               {members.length === 0 ? (
-                <div style={{ padding: '16px', textAlign: 'center', background: 'rgba(15,23,42,0.3)', borderRadius: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                <div className="info-note" style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-secondary)' }}>
                   Koperasi belum memiliki anggota. Terima anggota baru di Bottom Bar!
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '180px', overflowY: 'auto' }}>
                   {members.map((m) => (
                     <div key={m.id} className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', flex: '1 0 200px' }}>
-                      <img src={m.avatar} alt={m.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                      <img src={m.avatar} alt={m.name} style={{ width: '28px', height: '28px', borderRadius: '0', objectFit: 'cover', border: '3px solid var(--wood-dark)' }} />
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontSize: '12px', fontWeight: '600' }}>{getPersonName(m)}</span>
                         <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>{m.pekerjaan}</span>
@@ -166,7 +166,7 @@ export default function PanelPinjaman() {
             <div>
               <h3 style={{ fontSize: '15px', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Pinjaman Aktif ({activeLoans.filter(l => l.status === 'aktif').length})</h3>
               {activeLoans.filter(l => l.status === 'aktif').length === 0 ? (
-                <div style={{ padding: '16px', textAlign: 'center', background: 'rgba(15,23,42,0.3)', borderRadius: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                <div className="info-note" style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-secondary)' }}>
                   Tidak ada pinjaman aktif saat ini.
                 </div>
               ) : (
@@ -184,7 +184,7 @@ export default function PanelPinjaman() {
                           <span>Cicilan: {formatRupiah(l.cicilanPerBulan)}/bln</span>
                         </div>
                         {/* Progress bar */}
-                        <div style={{ width: '100%', height: '8px', background: 'rgba(15,23,42,0.6)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: '100%', height: '8px', background: '#e3d4bd', borderRadius: '0', overflow: 'hidden' }}>
                           <div style={{ width: `${progressPercent}%`, height: '100%', background: 'var(--accent-blue)', transition: 'width 0.3s ease' }}></div>
                         </div>
                       </div>

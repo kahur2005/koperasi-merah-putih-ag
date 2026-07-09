@@ -73,7 +73,7 @@ export default function BagiHasil() {
           </div>
 
           {/* Breakdown calculation */}
-          <div className="glass-card" style={{ background: 'rgba(15,23,42,0.3)', padding: '12px', margin: '8px 0' }}>
+          <div className="glass-card" style={{ padding: '12px', margin: '8px 0' }}>
             <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '8px' }}>Preview Pembayaran</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>

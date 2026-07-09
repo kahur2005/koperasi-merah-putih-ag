@@ -39,22 +39,21 @@ export default function PanelMuseum() {
           width: '90%', 
           display: 'flex', 
           flexDirection: 'column', 
-          padding: '0', 
-          overflow: 'hidden',
-          background: 'rgba(15,23,42,0.95)'
-        }} 
+          padding: '0',
+          overflow: 'hidden'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Browser-like Window Header & Tabs */}
-        <div style={{ background: 'rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: 'var(--wood-dark)', display: 'flex', flexDirection: 'column' }}>
           {/* Top Window Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px' }}>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }} onClick={handleClose} cursor="pointer" />
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }} />
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f' }} />
+              <div style={{ width: '12px', height: '12px', borderRadius: '0', background: '#ff5f56' }} onClick={handleClose} cursor="pointer" />
+              <div style={{ width: '12px', height: '12px', borderRadius: '0', background: '#ffbd2e' }} />
+              <div style={{ width: '12px', height: '12px', borderRadius: '0', background: '#27c93f' }} />
             </div>
-            <h2 style={{ fontSize: '14px', margin: 0, fontWeight: '600', color: 'var(--text-secondary)' }}>🏛 {UI.MUSEUM_TITLE || 'Museum Koperasi'}</h2>
+            <h2 style={{ fontSize: '14px', margin: 0, fontWeight: '600', color: 'var(--ink-inverse)' }}>🏛 {UI.MUSEUM_TITLE || 'Museum Koperasi'}</h2>
             <div style={{ width: '44px' }}></div> {/* Spacer for centering */}
           </div>
 
@@ -69,17 +68,16 @@ export default function PanelMuseum() {
                   alignItems: 'center',
                   gap: '8px',
                   padding: '10px 20px',
-                  background: activeTab === tab.id ? 'rgba(30,41,59,1)' : 'rgba(255,255,255,0.05)',
+                  background: activeTab === tab.id ? 'var(--paper)' : 'var(--wood-mid)',
                   border: 'none',
-                  borderTopLeftRadius: '8px',
-                  borderTopRightRadius: '8px',
-                  color: activeTab === tab.id ? '#fff' : 'var(--text-secondary)',
+                  borderRadius: '0',
+                  color: activeTab === tab.id ? 'var(--ink)' : 'var(--ink-inverse)',
                   fontWeight: activeTab === tab.id ? '700' : '500',
                   fontSize: '14px',
                   cursor: 'pointer',
-                  borderTop: activeTab === tab.id ? '2px solid var(--accent-green)' : '2px solid transparent',
-                  boxShadow: activeTab === tab.id ? '0 -4px 12px rgba(0,0,0,0.2)' : 'none',
-                  transition: 'all 0.2s',
+                  borderTop: activeTab === tab.id ? '3px solid var(--accent-green)' : '3px solid transparent',
+                  boxShadow: 'none',
+                  transition: 'none',
                   outline: 'none',
                   whiteSpace: 'nowrap'
                 }}
@@ -92,7 +90,7 @@ export default function PanelMuseum() {
         </div>
 
         {/* Content Area with Carousel */}
-        <div style={{ padding: '24px', background: 'rgba(30,41,59,1)', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '24px', background: 'var(--paper)', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
           <h1 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '16px', color: 'var(--accent-yellow)', textAlign: 'center' }}>
             {content.title}
           </h1>
@@ -102,16 +100,16 @@ export default function PanelMuseum() {
 
             <div className="carousel-slide" style={{ padding: '0', background: 'transparent', border: 'none', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {/* Image for the current section */}
-              <div style={{ width: '100%', height: '200px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ width: '100%', height: '200px', borderRadius: '0', overflow: 'hidden', border: '3px solid var(--wood-dark)' }}>
                 <img src={currentSlide.image || content.image} alt={content.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
 
               {/* Text for the current section */}
-              <div style={{ background: 'rgba(15,23,42,0.6)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+              <div style={{ background: 'var(--paper-2)', padding: '20px', borderRadius: '0', border: '3px solid var(--wood-dark)' }}>
                 <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '12px', color: 'var(--accent-green)' }}>
                   {currentSlide.subtitle}
                 </h3>
-                <p style={{ fontSize: '15px', color: '#e2e8f0', lineHeight: '1.7', whiteSpace: 'pre-line' }}>
+                <p style={{ fontSize: '15px', color: 'var(--ink)', lineHeight: '1.7', whiteSpace: 'pre-line' }}>
                   {currentSlide.text}
                 </p>
               </div>

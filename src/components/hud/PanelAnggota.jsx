@@ -41,7 +41,7 @@ export default function PanelAnggota() {
           <img 
             src={selectedNpc.avatar} 
             alt={personName} 
-            style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--accent-yellow)' }} 
+            style={{ width: '96px', height: '96px', borderRadius: '0', objectFit: 'cover', border: '3px solid var(--wood-dark)' }}
           />
           <div>
             <h3 style={{ fontSize: '20px', marginBottom: '4px' }}>{personName}</h3>
