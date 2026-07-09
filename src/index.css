@@ -1,26 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+/* ── Self-hosted pixel font ─────────────────────────────────────── */
+@font-face {
+  font-family: 'PixelFont';
+  src: url('/assets/fonts/PixelFont.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
 
 :root {
-  --bg-primary: #102018;
-  --bg-secondary: #203027;
-  --bg-panel: #1b2b22;
-  --bg-card: rgba(248, 243, 232, 0.94);
-  --bg-card-hover: #fffaf0;
-  --text-primary: #1f2a22;
-  --text-secondary: #66715f;
-  --text-inverse: #fffaf0;
-  --text-on-card: #1f2a22;
-  --muted-on-card: #66715f;
+  /* Surfaces */
+  --paper: #f4e4bc;
+  --paper-2: #fff6e0;
+  --wood-dark: #3a2412;
+  --wood-mid: #7a4a1e;
+  --wood-light: #b9843f;
+
+  /* Ink / text */
+  --ink: #2b1c0c;
+  --ink-soft: #6b5334;
+  --ink-inverse: #fff6e0;
+
+  /* Accents (retained hues) */
   --accent-red: #c42026;
-  --accent-blue: #315f8f;
   --accent-green: #2f8b57;
-  --accent-yellow: #d89b1d;
+  --accent-blue: #315f8f;
+  --accent-gold: #d89b1d;
   --accent-orange: #bd6b2f;
-  --border: rgba(255, 250, 240, 0.22);
-  --card-border: #4a2c16;
-  --font-sans: 'VT323', monospace;
-  --shadow-lg: 0 18px 40px rgba(20, 24, 20, 0.24);
-  --focus-ring: 0 0 0 3px rgba(216, 155, 29, 0.42);
+
+  /* Retro primitives */
+  --pixel-border-w: 4px;
+  --pixel-shadow: 5px 5px 0 rgba(43, 28, 12, 0.85);
+  --pixel-shadow-sm: 3px 3px 0 rgba(43, 28, 12, 0.85);
+  --font-pixel: 'PixelFont', 'VT323', monospace;
+  --focus-ring: 0 0 0 3px var(--accent-gold);
+
+  /* Back-compat aliases so untouched rules keep working until rethemed.
+     Later tasks migrate rules off these; remove aliases in Task 10. */
+  --bg-card: var(--paper);
+  --bg-card-hover: var(--paper-2);
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink-soft);
+  --text-inverse: var(--ink-inverse);
+  --text-on-card: var(--ink);
+  --muted-on-card: var(--ink-soft);
+  --card-border: var(--wood-dark);
+  --border: rgba(58, 36, 18, 0.35);
+  --accent-yellow: var(--accent-gold);
+  --font-sans: var(--font-pixel);
+  --shadow-lg: var(--pixel-shadow);
+  --bg-primary: #241a10;
+  --bg-secondary: #3a2a18;
+  --bg-panel: #2c2013;
 }
 
 * {
@@ -29,12 +58,17 @@
   box-sizing: border-box;
 }
 
+img {
+  image-rendering: pixelated;
+}
+
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-pixel);
   background-color: var(--bg-primary);
-  color: var(--text-primary);
+  color: var(--ink);
   overflow: hidden;
-  -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
 
 .app {
@@ -42,7 +76,7 @@ body {
   height: 100vh;
   position: relative;
   overflow: hidden;
-  background: #102018;
+  background: #241a10;
 }
 
 .glass-card {
