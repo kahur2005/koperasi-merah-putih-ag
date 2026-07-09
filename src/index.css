@@ -1485,10 +1485,10 @@ input:focus-visible {
 .tycoon-panel {
   overflow-y: auto;
   padding: 16px;
-  border-radius: 10px;
-  background: rgba(248, 243, 232, 0.96);
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow-lg);
+  border-radius: 0;
+  background: var(--paper);
+  border: 4px solid var(--wood-dark);
+  box-shadow: var(--pixel-shadow);
   color: var(--text-on-card);
 }
 
@@ -1497,7 +1497,7 @@ input:focus-visible {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 1px solid var(--card-border);
+  border-bottom: 3px solid var(--wood-dark);
   padding-bottom: 14px;
 }
 
@@ -1505,45 +1505,46 @@ input:focus-visible {
   margin-top: 2px;
   font-size: 20px;
   font-weight: 900;
-  color: var(--text-on-card);
+  color: var(--ink-inverse);
 }
 
 .panel-kicker {
   font-size: 11px;
   font-weight: 900;
   text-transform: uppercase;
-  color: var(--muted-on-card);
+  color: #e9d3b0;
   letter-spacing: 0.04em;
 }
 
 .shop-money {
   flex: 0 0 auto;
   padding: 8px 10px;
-  border-radius: 8px;
-  background: #fff3cf;
-  color: #62400d;
-  font-size: 13px;
-  font-weight: 900;
+  border-radius: 0;
+  border: 3px solid var(--wood-dark);
+  background: #ffe9a8;
+  color: #6b4a0d;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .placement-card,
 .selected-card,
 .upgrade-card,
 .furniture-card {
-  border-radius: 8px;
-  border: 1px solid var(--card-border);
-  background: #fffaf0;
+  border-radius: 0;
+  border: 3px solid var(--wood-dark);
+  background: var(--paper-2);
   padding: 12px;
 }
 
 .placement-card {
-  border-color: rgba(47, 139, 87, 0.38);
-  background: #eef8ee;
+  border-color: var(--accent-green);
+  background: #dcefdf;
 }
 
 .selected-card {
-  border-color: rgba(49, 95, 143, 0.34);
-  background: #eef4fb;
+  border-color: var(--accent-blue);
+  background: #dfeaf4;
 }
 
 .placement-card h3,
@@ -1583,14 +1584,14 @@ input:focus-visible {
 .swatch {
   width: 30px;
   height: 30px;
-  border-radius: 999px;
-  border: 2px solid rgba(31, 42, 34, 0.22);
+  border-radius: 0;
+  border: 3px solid var(--wood-dark);
   cursor: pointer;
 }
 
 .swatch.active {
-  border-color: var(--text-on-card);
-  box-shadow: 0 0 0 3px rgba(216, 155, 29, 0.28);
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 3px var(--accent-gold);
 }
 
 .move-pad {
@@ -1670,18 +1671,12 @@ input:focus-visible {
 }
 
 .upgrade-card {
-  border-color: rgba(216, 155, 29, 0.42);
-  background: #fff3cf;
+  border-color: var(--accent-gold);
+  background: #ffe9a8;
 }
 
-.btn-upgrade {
-  background: var(--accent-yellow);
-  color: #1f2a22;
-}
-
-.btn-upgrade:hover {
-  background: #c98913;
-}
+.btn-upgrade { background: var(--accent-gold); color: var(--ink); text-shadow: 1px 1px 0 rgba(255,246,224,0.4); }
+.btn-upgrade:hover { background: #e8ad2e; }
 
 .btn-block {
   width: 100%;
