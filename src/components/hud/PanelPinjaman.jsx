@@ -13,8 +13,7 @@ export default function PanelPinjaman() {
   const denyLoan = useGameStore((s) => s.denyLoan);
   const setActiveModal = useGameStore((s) => s.setActiveModal);
   const setSelectedLoan = useGameStore((s) => s.setSelectedLoan);
-
-  const [bunga, setBunga] = useState(5); // Default interest rate 5%
+  
   const getPersonName = (person) => person?.nama || person?.name || person?.memberName || person?.namaAnggota || 'Warga Desa';
 
   const handleClose = () => {
@@ -23,14 +22,14 @@ export default function PanelPinjaman() {
   };
 
   if (activeModal === 'pinjamanDetail' && selectedLoan) {
-    // Live loan calculations
-    const pokokBulanan = Math.round(selectedLoan.jumlahPinjaman / selectedLoan.tenorBulan);
-    const bungaBulanan = Math.round((selectedLoan.jumlahPinjaman / selectedLoan.tenorBulan) * (bunga / 100));
+    // Live loan calculations (Fixed 6% PA -> 0.5% PM, Tenor fixed to 1 month)
+    const pokokBulanan = selectedLoan.jumlahPinjaman;
+    const bungaBulanan = Math.round(selectedLoan.jumlahPinjaman * 0.005);
     const totalBulanan = pokokBulanan + bungaBulanan;
-    const totalBayar = totalBulanan * selectedLoan.tenorBulan;
+    const totalBayar = totalBulanan;
 
     const handleApprove = () => {
-      approveLoan(selectedLoan.id, bunga);
+      approveLoan(selectedLoan.id);
       handleClose();
     };
 
@@ -75,38 +74,18 @@ export default function PanelPinjaman() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>
               <span style={{ color: 'var(--text-secondary)' }}>{UI.TENOR}</span>
-              <span style={{ fontWeight: '600' }}>{selectedLoan.tenorBulan} {UI.BULAN}</span>
+              <span style={{ fontWeight: '600' }}>1 {UI.BULAN}</span>
             </div>
-
-            {/* Interest setting */}
+            
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '8px 0' }}>
               <span style={{ color: 'var(--text-secondary)' }}>{UI.BUNGA}</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="20" 
-                  value={bunga} 
-                  onChange={(e) => setBunga(parseInt(e.target.value))} 
-                  style={{ width: '120px' }}
-                />
-                <span style={{ fontWeight: '700', color: 'var(--accent-orange)', width: '36px', textAlign: 'right' }}>{bunga}%</span>
-              </div>
+              <span style={{ fontWeight: '700', color: 'var(--accent-orange)' }}>6% / Tahun</span>
             </div>
           </div>
 
-          {/* Interest effect indicator */}
           <div style={{ padding: '8px 12px', background: 'rgba(15,23,42,0.5)', borderRadius: '8px', fontSize: '11px', marginBottom: '12px', borderLeft: '3px solid var(--accent-orange)' }}>
             <span style={{ fontWeight: '700' }}>{UI.EFEK}: </span>
-            {bunga <= 5 ? (
-              <span style={{ color: 'var(--accent-green)' }}>Rakyat senang! Tanpa penalti kebahagiaan.</span>
-            ) : bunga <= 10 ? (
-              <span style={{ color: 'var(--accent-yellow)' }}>Penalti kebahagiaan: -5% saat disetujui.</span>
-            ) : bunga <= 15 ? (
-              <span style={{ color: 'var(--accent-orange)' }}>Penalti kebahagiaan: -10% saat disetujui.</span>
-            ) : (
-              <span style={{ color: 'var(--accent-red)' }}>Rentenir! Penalti kebahagiaan: -15% saat disetujui.</span>
-            )}
+            <span style={{ color: 'var(--accent-green)' }}>Menambah pasokan UMKM +5 dan menurunkan harga 2% saat pinjaman lunas.</span>
           </div>
 
           {/* Payment calculation breakdown */}

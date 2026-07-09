@@ -42,6 +42,7 @@ export const FURNITURE = {
   riceRack:       { price: 500_000,  stockBonus: { rice: 10 },              maxCount: Infinity, label: 'Rak Beras' },
   oilRack:        { price: 600_000,  stockBonus: { cookingOil: 10 },        maxCount: Infinity, label: 'Rak Minyak' },
   goodsRack:      { price: 200_000,  stockBonus: { rice: 3, cookingOil: 3 },maxCount: Infinity, label: 'Rak Barang' },
+  lpgStack:       { price: 400_000,  stockBonus: { lpgGas: 10 },            maxCount: Infinity, label: 'Tumpukan Gas LPG' },
   cashier:        { price: 350_000,  customerBonus: 10,                     maxCount: Infinity, label: 'Meja Kasir' },
   carpet:         { price: 700_000,  happinessBonus: 5,                     maxCount: 3, label: 'Karpet' },
   indoorPlant:    { price: 850_000,  happinessBonus: 5,                     maxCount: 3, label: 'Tanaman Hias' },

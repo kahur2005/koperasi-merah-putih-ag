@@ -33,7 +33,6 @@ export default function Dashboard() {
 
   const dateObj = dayjs(currentDate);
   const monthName = UI.BULAN_NAMES[dateObj.month()];
-  const displayDateStr = `${dateObj.date()} ${monthName} ${dateObj.year()}`;
 
   const handleSelectNpc = (npc) => {
     setSelectedNpc(npc);
@@ -92,12 +91,6 @@ export default function Dashboard() {
 
       <div className="center-building-area">
         <div className="store-entry-panel" aria-label="Status toko koperasi">
-          <span className="store-entry-kicker">Koperasi Merah Putih</span>
-          <div className="store-entry-metrics" aria-label="Ringkasan stok">
-            <span><img src="/assets/images/icon_beras.png" alt="" /> Stok</span>
-            <span><img src="/assets/images/icon_anggota.png" alt="" /> Anggota</span>
-            <span><img src="/assets/images/icon_uang.png" alt="" /> Kas</span>
-          </div>
           <button className="btn btn-primary btn-masuk" onClick={() => setView('store3d')}>
             Masuk Toko
           </button>
@@ -106,10 +99,6 @@ export default function Dashboard() {
 
       <ChapterProgress />
       <AdvisoryMemo />
-
-      <div className="date-badge">
-        Hari Ke-{dayNumber} &bull; <span style={{ color: 'var(--text-primary)' }}>{displayDateStr}</span>
-      </div>
 
       <div className="bottom-bar glass-card">
         <div className="bottom-section">

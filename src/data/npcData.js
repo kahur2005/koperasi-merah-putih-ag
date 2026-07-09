@@ -14,8 +14,8 @@ export const NPC_DATABASE = [
     simpananWajib: 50_000,
     avatar: '/assets/avatars/male_1_budi.jpg',
     loanTemplates: [
-      { tujuan: 'Perbaikan sawah', jumlah: 1_000_000, tenor: 5, barangTerkait: 'rice' },
-      { tujuan: 'Pembelian bibit', jumlah: 500_000, tenor: 3, barangTerkait: 'rice' },
+      { tujuan: 'Meningkatkan produksi beras', jumlah: 1_000_000, tenor: 1, barangTerkait: 'rice' },
+      { tujuan: 'Meningkatkan produksi beras', jumlah: 500_000, tenor: 1, barangTerkait: 'rice' },
     ],
   },
   {
@@ -28,8 +28,8 @@ export const NPC_DATABASE = [
     simpananWajib: 50_000,
     avatar: '/assets/avatars/male_2_ahmad.jpg',
     loanTemplates: [
-      { tujuan: 'Penambahan stok dagangan', jumlah: 1_500_000, tenor: 6, barangTerkait: null },
-      { tujuan: 'Renovasi toko', jumlah: 2_000_000, tenor: 8, barangTerkait: null },
+      { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 600_000, tenor: 1, barangTerkait: 'cookingOil' },
+      { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 800_000, tenor: 1, barangTerkait: 'lpgGas' },
     ],
   },
   {
@@ -42,8 +42,8 @@ export const NPC_DATABASE = [
     simpananWajib: 50_000,
     avatar: '/assets/avatars/male_3_hendra.jpg',
     loanTemplates: [
-      { tujuan: 'Pembelian jaring baru', jumlah: 800_000, tenor: 4, barangTerkait: null },
-      { tujuan: 'Perbaikan perahu', jumlah: 1_200_000, tenor: 5, barangTerkait: null },
+      { tujuan: 'Meningkatkan produksi beras', jumlah: 800_000, tenor: 1, barangTerkait: 'rice' },
+      { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 700_000, tenor: 1, barangTerkait: 'cookingOil' },
     ],
   },
   {
@@ -56,8 +56,8 @@ export const NPC_DATABASE = [
     simpananWajib: 50_000,
     avatar: '/assets/avatars/male_4_dedi.jpg',
     loanTemplates: [
-      { tujuan: 'Modal produksi minyak', jumlah: 1_500_000, tenor: 6, barangTerkait: 'cookingOil' },
-      { tujuan: 'Pembelian mesin press', jumlah: 2_000_000, tenor: 8, barangTerkait: 'cookingOil' },
+      { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 1_000_000, tenor: 1, barangTerkait: 'cookingOil' },
+      { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 900_000, tenor: 1, barangTerkait: 'cookingOil' },
     ],
   },
 
@@ -72,8 +72,8 @@ export const NPC_DATABASE = [
     simpananWajib: 50_000,
     avatar: '/assets/avatars/female_1_siti.jpg',
     loanTemplates: [
-      { tujuan: 'Pembelian mesin jahit', jumlah: 700_000, tenor: 4, barangTerkait: null },
-      { tujuan: 'Pembelian kain', jumlah: 500_000, tenor: 3, barangTerkait: null },
+      { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 700_000, tenor: 1, barangTerkait: 'lpgGas' },
+      { tujuan: 'Meningkatkan produksi beras', jumlah: 500_000, tenor: 1, barangTerkait: 'rice' },
     ],
   },
   {
@@ -86,8 +86,8 @@ export const NPC_DATABASE = [
     simpananWajib: 50_000,
     avatar: '/assets/avatars/female_2_dewi.jpg',
     loanTemplates: [
-      { tujuan: 'Biaya pendidikan anak', jumlah: 1_000_000, tenor: 5, barangTerkait: null },
-      { tujuan: 'Renovasi rumah', jumlah: 3_000_000, tenor: 10, barangTerkait: null },
+      { tujuan: 'Meningkatkan produksi beras', jumlah: 1_000_000, tenor: 1, barangTerkait: 'rice' },
+      { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 600_000, tenor: 1, barangTerkait: 'lpgGas' },
     ],
   },
   {
@@ -100,8 +100,8 @@ export const NPC_DATABASE = [
     simpananWajib: 50_000,
     avatar: '/assets/avatars/female_3_rina.jpg',
     loanTemplates: [
-      { tujuan: 'Modal sayur-mayur', jumlah: 600_000, tenor: 3, barangTerkait: null },
-      { tujuan: 'Sewa lapak pasar', jumlah: 1_000_000, tenor: 5, barangTerkait: null },
+      { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 600_000, tenor: 1, barangTerkait: 'cookingOil' },
+      { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 800_000, tenor: 1, barangTerkait: 'lpgGas' },
     ],
   },
   {
@@ -114,8 +114,8 @@ export const NPC_DATABASE = [
     simpananWajib: 50_000,
     avatar: '/assets/avatars/female_4_kartini.jpg',
     loanTemplates: [
-      { tujuan: 'Penambahan stok gas', jumlah: 1_500_000, tenor: 5, barangTerkait: 'lpgGas' },
-      { tujuan: 'Kendaraan distribusi', jumlah: 3_000_000, tenor: 10, barangTerkait: 'lpgGas' },
+      { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 1_000_000, tenor: 1, barangTerkait: 'lpgGas' },
+      { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 900_000, tenor: 1, barangTerkait: 'lpgGas' },
     ],
   },
 ];

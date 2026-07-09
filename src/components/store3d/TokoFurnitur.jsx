@@ -149,7 +149,24 @@ export default function TokoFurnitur({ selectedId, setSelectedId }) {
           // Build description
           let desc = '';
           if (def.stockBonus) {
-            desc = `Kapasitas: ${Object.entries(def.stockBonus).map(([k, v]) => `+${v} ${k === 'rice' ? '🍚' : '🛢'}`).join(', ')}`;
+            desc = (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                Kapasitas:{' '}
+                {Object.entries(def.stockBonus).map(([k, v], idx) => {
+                  let iconPath = '';
+                  if (k === 'rice') iconPath = '/assets/images/icon_beras.png';
+                  else if (k === 'lpgGas') iconPath = '/assets/images/icon_gas.png';
+                  else iconPath = '/assets/images/icon_minyak.png';
+                  
+                  return (
+                    <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      +{v} <img src={iconPath} alt={k} style={{ width: '16px', height: '16px' }} />
+                      {idx < Object.keys(def.stockBonus).length - 1 && ', '}
+                    </span>
+                  );
+                })}
+              </span>
+            );
           } else if (def.customerBonus) {
             desc = `Bonus pelanggan: +${def.customerBonus} orang/hari`;
           } else if (def.happinessBonus) {

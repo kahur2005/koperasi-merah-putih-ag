@@ -61,6 +61,15 @@ export default function PanelKalender() {
     });
   }
 
+  // Bagi Hasil is always on the last day of the month
+  const bagiHasilDay = endDayOfMonth;
+  eventsList.push({
+    title: `${UI.BAGI_HASIL} (Tanggal ${daysInMonth})`,
+    desc: UI.BAGI_HASIL_DESC || 'Pembagian sisa hasil usaha kepada anggota koperasi.',
+    status: dayNumber === bagiHasilDay ? 'SEDANG AKTIF' : (dayNumber > bagiHasilDay ? 'SELESAI' : 'MENDATANG'),
+    color: 'var(--accent-green)',
+  });
+
   const targetMoney = WIN_CONDITIONS.MONEY || 10_000_000;
   const targetMembers = WIN_CONDITIONS.MEMBERS || 8;
   const targetHappiness = WIN_CONDITIONS.HAPPINESS || 60;
@@ -143,11 +152,13 @@ export default function PanelKalender() {
                 const isToday = cell.cellDayNumber === dayNumber;
                 const isGagalPanen = cell.cellDayNumber === gagalPanenDay;
                 const isKrisis = krisisStartDay != null && cell.cellDayNumber >= krisisStartDay && cell.cellDayNumber < krisisStartDay + 7;
+                const isBagiHasil = cell.cellDayNumber === endDayOfMonth;
                 const className = [
                   'planner-day',
                   isToday ? 'is-today' : '',
                   isGagalPanen ? 'has-harvest' : '',
                   isKrisis ? 'has-crisis' : '',
+                  isBagiHasil ? 'has-shu' : '',
                 ].filter(Boolean).join(' ');
 
                 return (
@@ -156,6 +167,7 @@ export default function PanelKalender() {
                     <div className="planner-dots">
                       {isGagalPanen && <span className="dot-harvest" />}
                       {isKrisis && <span className="dot-crisis" />}
+                      {isBagiHasil && <span className="dot-shu" style={{ backgroundColor: 'var(--accent-green)' }} />}
                     </div>
                   </div>
                 );
@@ -189,6 +201,7 @@ export default function PanelKalender() {
             <div className="planner-legend">
               <span><i className="dot-harvest" /> Gagal panen</span>
               <span><i className="dot-crisis" /> Krisis ekonomi</span>
+              <span><i className="dot-shu" style={{ backgroundColor: 'var(--accent-green)', width: '8px', height: '8px', borderRadius: '50%', display: 'inline-block' }} /> SHU (Sisa Hasil Usaha)</span>
             </div>
           </aside>
         </div>

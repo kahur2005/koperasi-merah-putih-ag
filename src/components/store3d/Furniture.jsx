@@ -114,6 +114,47 @@ const GoodsRack = ({ isSelected, customColor, isGhost }) => {
   );
 };
 
+const LpgStack = ({ isSelected, customColor, isGhost }) => {
+  const rackMaterial = <meshStandardMaterial color={customColor || '#334155'} roughness={0.7} emissive={isSelected ? '#3B82F6' : '#000000'} emissiveIntensity={isSelected ? 0.3 : 0} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
+  const lpgMaterial = <meshStandardMaterial color="#22C55E" roughness={0.6} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
+  const capMaterial = <meshStandardMaterial color="#64748B" roughness={0.5} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
+  const palletMaterial = <meshStandardMaterial color="#B45309" roughness={0.9} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
+
+  return (
+    <group>
+      {/* Base Pallet */}
+      <mesh position={[0, 0.05, 0]} castShadow={!isGhost} receiveShadow={!isGhost}>
+        <boxGeometry args={[1.2, 0.1, 1.2]} />
+        {palletMaterial}
+      </mesh>
+      
+      {/* 3x3x3 LPG Cylinders */}
+      {[0, 1, 2].map(layer => (
+        <group key={`layer-${layer}`}>
+          {[-0.35, 0, 0.35].map(x => (
+            [-0.35, 0, 0.35].map(z => (
+              <group key={`${layer}-${x}-${z}`} position={[x, 0.1 + layer * 0.45 + 0.2, z]}>
+                <mesh castShadow={!isGhost} receiveShadow={!isGhost}>
+                  <cylinderGeometry args={[0.15, 0.15, 0.35, 16]} />
+                  {lpgMaterial}
+                </mesh>
+                <mesh position={[0, 0.18, 0]} castShadow={!isGhost} receiveShadow={!isGhost}>
+                  <cylinderGeometry args={[0.15, 0.05, 0.1, 16]} />
+                  {lpgMaterial}
+                </mesh>
+                <mesh position={[0, 0.25, 0]} castShadow={!isGhost} receiveShadow={!isGhost}>
+                  <cylinderGeometry args={[0.06, 0.06, 0.08, 16]} />
+                  {capMaterial}
+                </mesh>
+              </group>
+            ))
+          ))}
+        </group>
+      ))}
+    </group>
+  );
+};
+
 const CashierDesk = ({ isSelected, customColor, isGhost }) => {
   const deskColor = customColor || '#B45309';
   const deskMaterial = <meshStandardMaterial color={deskColor} roughness={0.7} emissive={isSelected ? '#3B82F6' : '#000000'} emissiveIntensity={isSelected ? 0.3 : 0} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
@@ -237,6 +278,7 @@ export default function Furniture({ id, type, x, y, rotation = 0, color, isSelec
       case 'riceRack': return <RiceRack isSelected={isSelected} customColor={color} isGhost={isGhost} />;
       case 'oilRack': return <OilRack isSelected={isSelected} customColor={color} isGhost={isGhost} />;
       case 'goodsRack': return <GoodsRack isSelected={isSelected} customColor={color} isGhost={isGhost} />;
+      case 'lpgStack': return <LpgStack isSelected={isSelected} customColor={color} isGhost={isGhost} />;
       case 'cashier': return <CashierDesk isSelected={isSelected} customColor={color} isGhost={isGhost} />;
       case 'carpet': return <Carpet isSelected={isSelected} customColor={color} isGhost={isGhost} />;
       case 'indoorPlant': return <IndoorPlant isSelected={isSelected} customColor={color} isGhost={isGhost} />;

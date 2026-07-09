@@ -99,8 +99,8 @@ const createInitialState = () => ({
   activeEvents: [],
   eventLog: [],
   boughtFromUMKMToday: false,
-  gagalPanenDay: null,
-  krisisStartDay: null,
+  gagalPanenDay: 15, // pre-scheduled for Jan 15th
+  krisisStartDay: 8, // pre-scheduled for Jan 8th
   krisisDaysRemaining: 0,
 
   // UI state
@@ -212,18 +212,36 @@ export const useGameStore = create((set, get) => ({
       const npc = state.pendingApplications.find((a) => a.id === npcId);
       if (!npc) return {};
 
-      const newMembers = [...state.members, { ...npc, joinDate: state.currentDate }];
+      const newMembers = [...state.members, { ...npc, joinDate: state.currentDate, hasAppliedForLoan: false }];
       const newPending = state.pendingApplications.filter((a) => a.id !== npcId);
       const newMemberCount = state.memberCount + 1;
 
       // Recalculate stock capacity based on furniture
       const newStockCapacity = recalcStockCapacity(state.furniture);
 
+      // Schedule a loan for 1-5 days later
+      const loanDelay = randomInt(1, 5);
+      const scheduledDay = state.dayNumber + loanDelay;
+      const loanTemplate = pickRandom(npc.loanTemplates);
+
+      const scheduledLoan = {
+        dayNumber: scheduledDay,
+        memberId: npc.id,
+        memberName: npc.nama || npc.name,
+        jumlahPinjaman: loanTemplate.jumlah,
+        tenorBulan: loanTemplate.tenor,
+        alasan: loanTemplate.tujuan,
+        barangTerkait: loanTemplate.barangTerkait || null,
+      };
+
+      const newLoanSchedule = [...state.loanSchedule, scheduledLoan];
+
       return {
         members: newMembers,
         pendingApplications: newPending,
         memberCount: newMemberCount,
         stockCapacity: newStockCapacity,
+        loanSchedule: newLoanSchedule,
         notifications: [
           ...state.notifications,
           { id: uid(), text: `${displayName(npc)} telah diterima sebagai anggota koperasi!` },
@@ -252,61 +270,48 @@ export const useGameStore = create((set, get) => ({
   // ╚═══════════════════════════════════════════════════════════════════════════╝
 
   /** 9. approveLoan */
-  approveLoan: (loanId, bungaPersen) =>
+  approveLoan: (loanId) =>
     set((state) => {
       const loanReq = state.pendingLoanRequests.find((l) => l.id === loanId);
       if (!loanReq) return {};
-      if (state.money < loanReq.jumlahPinjaman) return {};
+      if (state.money < loanReq.jumlahPinjaman) return {}; // Saldo tidak cukup
 
-      const cicilanPerBulan =
-        (loanReq.jumlahPinjaman / loanReq.tenorBulan) * (1 + bungaPersen / 100);
+      // Interest is fixed at 6% p.a., tenor is 1 month. Total repayment = Pokok + (Pokok * 0.005)
+      const cicilanPerBulan = Math.round(loanReq.jumlahPinjaman * 1.005);
 
-      const newLoan = {
-        ...loanReq,
-        bungaPersen,
-        cicilanPerBulan: Math.round(cicilanPerBulan),
-        status: 'aktif',
+      const activeLoan = {
+        id: uid(),
+        memberId: loanReq.memberId,
+        namaAnggota: loanReq.memberName,
+        avatar: state.members.find((m) => m.id === loanReq.memberId)?.avatar,
+        pekerjaanAnggota: state.members.find((m) => m.id === loanReq.memberId)?.pekerjaan,
+        jumlahPinjaman: loanReq.jumlahPinjaman,
+        tenorBulan: loanReq.tenorBulan, // typically 1
         sisaBulan: loanReq.tenorBulan,
-        totalTerbayar: 0,
-        approvedDate: state.currentDate,
+        bungaPersen: 6,
+        cicilanPerBulan,
+        tujuanPinjaman: loanReq.alasan,
+        barangTerkait: loanReq.barangTerkait,
+        status: 'aktif',
+        startDate: state.currentDate,
       };
 
-      // Happiness penalty based on interest rate
-      let happinessDelta = 0;
-      if (bungaPersen >= 16) happinessDelta = -15;
-      else if (bungaPersen >= 11) happinessDelta = -10;
-      else if (bungaPersen >= 6) happinessDelta = -5;
-      // 1-5%: no penalty
-
-      const newHappiness = clamp(state.happiness + happinessDelta);
+      const newMoney = state.money - loanReq.jumlahPinjaman;
+      const newHappiness = clamp(state.happiness); // No penalty for standard 6% interest
 
       return {
-        money: state.money - loanReq.jumlahPinjaman,
-        happiness: newHappiness,
-        activeLoans: [...state.activeLoans, newLoan],
         pendingLoanRequests: state.pendingLoanRequests.filter((l) => l.id !== loanId),
+        activeLoans: [...state.activeLoans, activeLoan],
+        money: newMoney,
+        happiness: newHappiness,
         statistics: {
           ...state.statistics,
           totalLoansGiven: state.statistics.totalLoansGiven + 1,
         },
         notifications: [
           ...state.notifications,
-          {
-            id: uid(),
-            text: `Pinjaman Rp ${loanReq.jumlahPinjaman.toLocaleString('id-ID')} untuk ${displayName(loanReq)} disetujui (bunga ${bungaPersen}%).`,
-          },
+          { id: uid(), text: `Pinjaman Rp ${loanReq.jumlahPinjaman.toLocaleString('id-ID')} disetujui.` },
         ],
-        ...storyMomentPatch(state, `loan_approved_${state.statistics.totalLoansGiven + 1}`, {
-          speaker: displayName(loanReq),
-          title: 'Modal usaha disalurkan',
-          text: bungaPersen <= 5
-            ? 'Bunga ringan membuat kami berani berkembang. Kalau usaha jalan, pasokan desa juga ikut kuat.'
-            : 'Terima kasih pinjamannya. Bunganya terasa berat, jadi kepercayaan warga perlu dijaga dari sisi lain.',
-          avatar: loanReq.avatar || '/assets/avatars/male_2_ahmad.jpg',
-          tone: bungaPersen <= 5 ? 'success' : 'warning',
-          actionLabel: 'Pantau Pinjaman',
-          actionModal: 'pinjamanAktifList',
-        }),
       };
     }),
 
@@ -538,15 +543,29 @@ export const useGameStore = create((set, get) => ({
       let revenue = 0;
       let happinessDelta = 0;
       const salesBreakdown = {};
+      
+      const validItems = [];
       itemKeys.forEach((k) => {
         salesBreakdown[k] = { sold: 0, revenue: 0 };
+        if (currentStock[k] > 0) {
+          const sellPrice = state.sellingPrices[k];
+          const pp = state.purchasePrices[k];
+          const avgCost = Math.round(((pp.lastPT || 0) + (pp.lastUMKM || 0)) / 2);
+          const markupPercent = avgCost > 0 ? ((sellPrice - avgCost) / avgCost) * 100 : 0;
+          
+          if (markupPercent > 50) {
+             happinessDelta -= 5;
+          } else {
+             validItems.push(k);
+          }
+        }
       });
 
       let totalItemsSoldToday = 0;
 
       for (let i = 0; i < totalCustomers; i++) {
-        // Items with stock > 0
-        const availableItems = itemKeys.filter((k) => currentStock[k] > 0);
+        // Items with stock > 0 from the valid items
+        const availableItems = validItems.filter((k) => currentStock[k] > 0);
 
         if (availableItems.length === 0) {
           // No items → customer leaves unhappy
@@ -565,7 +584,6 @@ export const useGameStore = create((set, get) => ({
         totalItemsSoldToday += 1;
 
         // Calculate markup happiness effect
-        // Use the average of last PT/UMKM purchase prices as cost basis
         const pp = state.purchasePrices[chosenItem];
         const avgCost = Math.round(((pp.lastPT || 0) + (pp.lastUMKM || 0)) / 2);
         const markupPercent = avgCost > 0 ? ((sellPrice - avgCost) / avgCost) * 100 : 0;
@@ -579,11 +597,11 @@ export const useGameStore = create((set, get) => ({
 
       // ── f. Apply active event effects ──
       if (state.krisisDaysRemaining > 0) {
-        // Krisis Ekonomi: if selling prices are not below purchase prices → happiness -10
+        // Krisis Ekonomi: if selling prices of rice, oil, gas are not below purchase prices → happiness -10
         let sellingBelowCost = true;
-        itemKeys.forEach((item) => {
+        ['rice', 'cookingOil', 'lpgGas'].forEach((item) => {
           const pp = state.purchasePrices[item];
-          const avgCost = Math.round(((pp.lastPT || 0) + (pp.lastUMKM || 0)) / 2);
+          const avgCost = Math.round(((pp?.lastPT || 0) + (pp?.lastUMKM || 0)) / 2);
           if (state.sellingPrices[item] >= avgCost) {
             sellingBelowCost = false;
           }
@@ -740,26 +758,53 @@ export const useGameStore = create((set, get) => ({
 
       // ── d. Check loanSchedule for today's loan requests ──
       let newPendingLoanRequests = [...state.pendingLoanRequests];
-      const todayScheduled = state.loanSchedule.filter(
-        (entry) => entry.dayNumber === state.dayNumber
-      );
-      todayScheduled.forEach((entry) => {
-        // Only if member is approved and doesn't have an active loan
-        const isMember = state.members.some((m) => m.id === entry.memberId);
+      let newLoanSchedule = [];
+      let newMembers = state.members.map(m => ({ ...m }));
+
+      // At start of month, reset application trackers for everyone
+      if (isFirstOfMonth) {
+        newMembers.forEach(m => m.hasAppliedForLoan = false);
+      }
+
+      state.loanSchedule.forEach((entry) => {
+        const member = newMembers.find((m) => m.id === entry.memberId);
+        const isMember = !!member;
         const hasActiveLoan = state.activeLoans.some(
           (l) => l.memberId === entry.memberId && l.status === 'aktif'
         );
-        if (isMember && !hasActiveLoan) {
-          newPendingLoanRequests.push({
-            id: uid(),
-            memberId: entry.memberId,
-            memberName: entry.memberName,
-            jumlahPinjaman: entry.jumlahPinjaman,
-            tenorBulan: entry.tenorBulan,
-            alasan: entry.alasan,
-            barangTerkait: entry.barangTerkait || null,
-            requestDate: state.currentDate,
-          });
+        const hasPendingLoan = newPendingLoanRequests.some(
+          (l) => l.memberId === entry.memberId
+        );
+        const alreadyApplied = member?.hasAppliedForLoan;
+
+        if (entry.dayNumber <= state.dayNumber) {
+          if (isMember && !hasActiveLoan && !hasPendingLoan && !alreadyApplied) {
+            // Check if we hit the limit of requests on the dashboard
+            const MAX_REQUESTS = 2; // Keep max loan requests at 2 for the HUD
+            if (newPendingLoanRequests.length < MAX_REQUESTS) {
+              newPendingLoanRequests.push({
+                id: uid(),
+                memberId: entry.memberId,
+                memberName: entry.memberName,
+                avatar: member ? member.avatar : null,
+                pekerjaan: member ? member.pekerjaan : null,
+                pendapatanBulanan: member ? member.pendapatanBulanan : 0,
+                jumlahPinjaman: entry.jumlahPinjaman,
+                tenorBulan: entry.tenorBulan,
+                alasan: entry.alasan,
+                barangTerkait: entry.barangTerkait || null,
+                requestDate: state.currentDate,
+              });
+              // Mark member as having applied
+              if (member) member.hasAppliedForLoan = true;
+            } else {
+              // Keep for tomorrow if HUD is full
+              newLoanSchedule.push(entry);
+            }
+          }
+        } else {
+          // Not yet due
+          newLoanSchedule.push(entry);
         }
       });
 
@@ -798,8 +843,8 @@ export const useGameStore = create((set, get) => ({
           };
 
           if (updatedLoan.sisaBulan <= 0) {
-            // Loan term complete — 80% chance of success
-            const isSuccess = Math.random() < 0.8;
+            // Loan term complete — 100% chance of success
+            const isSuccess = true;
             if (isSuccess) {
               updatedLoan.status = 'lunas';
               statsUpdate = {
@@ -807,24 +852,27 @@ export const useGameStore = create((set, get) => ({
                 totalLoansSuccessful: statsUpdate.totalLoansSuccessful + 1,
               };
 
-              // If barangTerkait (related good): reduce UMKM base price by 1000, increase stock by 3
+              // If barangTerkait (related good): reduce UMKM base price by 2%, increase stock by 5
               if (updatedLoan.barangTerkait) {
                 const relatedItem = updatedLoan.barangTerkait;
+                const currentBasePrice = state.supplierPricesUMKM[relatedItem];
+                const priceReduction = Math.round(currentBasePrice * 0.02);
+                
                 umkmPriceAdjustments[relatedItem] =
-                  (umkmPriceAdjustments[relatedItem] || 0) - 1000;
+                  (umkmPriceAdjustments[relatedItem] || 0) - priceReduction;
                 umkmStockAdjustments[relatedItem] =
-                  (umkmStockAdjustments[relatedItem] || 0) + 3;
+                  (umkmStockAdjustments[relatedItem] || 0) + 5;
               }
 
               monthlyNotifications.push({
                 id: uid(),
-                text: `Pinjaman ${updatedLoan.memberName} telah lunas! Usaha berhasil.`,
+                text: `Pinjaman ${updatedLoan.namaAnggota} lunas! Kapasitas UMKM +5, Harga -2%.`,
               });
             } else {
               updatedLoan.status = 'gagal';
               monthlyNotifications.push({
                 id: uid(),
-                text: `Pinjaman ${updatedLoan.memberName} selesai tapi usaha kurang berhasil.`,
+                text: `Pinjaman ${updatedLoan.namaAnggota} selesai tapi usaha kurang berhasil.`,
               });
             }
             newCompletedLoans.push(updatedLoan);
@@ -850,13 +898,14 @@ export const useGameStore = create((set, get) => ({
       });
 
       // ── f. Generate loanSchedule at start of each month ──
-      let newLoanSchedule = state.loanSchedule;
       if (isFirstOfMonth) {
-        newLoanSchedule = generateMonthlyLoanSchedule(
+        const monthlySchedule = generateMonthlyLoanSchedule(
           today,
-          state.members,
-          state.activeLoans
+          newMembers,
+          state.activeLoans,
+          state.dayNumber
         );
+        newLoanSchedule = [...newLoanSchedule, ...monthlySchedule];
       }
 
       // ── g. Check and schedule events ──
@@ -875,10 +924,10 @@ export const useGameStore = create((set, get) => ({
         newGagalPanenDay = gagalAbsoluteDay;
       }
 
-      // Krisis Ekonomi: every 2 months, random start, 7 days
+      // Krisis Ekonomi: every month, random start, 7 days
       if (isFirstOfMonth) {
         const currentMonth = today.month() + 1; // 1-indexed
-        if (currentMonth % 2 === 0 && state.krisisDaysRemaining <= 0) {
+        if (state.krisisDaysRemaining <= 0) {
           const krisisStartOffset = randomInt(1, 15);
           newKrisisStartDay = state.dayNumber + krisisStartOffset;
           newActiveEvents = newActiveEvents.filter((e) => e.type !== 'krisisEkonomi');
@@ -906,7 +955,7 @@ export const useGameStore = create((set, get) => ({
         });
       }
 
-      // Activate Gagal Panen notification if today
+      // Activate Gagal Panen notification and price hike if today
       if (state.dayNumber === newGagalPanenDay) {
         if (!newActiveEvents.some((e) => e.type === 'gagalPanen')) {
           newActiveEvents.push({
@@ -914,9 +963,15 @@ export const useGameStore = create((set, get) => ({
             day: state.dayNumber,
           });
         }
+        
+        // Increase UMKM price for rice by 50%
+        if (adjustedUMKMPrices['rice'] !== undefined) {
+          adjustedUMKMPrices['rice'] = Math.round(adjustedUMKMPrices['rice'] * 1.5);
+        }
+
         monthlyNotifications.push({
           id: uid(),
-          text: '🌾 GAGAL PANEN! Pastikan membeli dari UMKM hari ini untuk mendukung petani lokal!',
+          text: '🌾 GAGAL PANEN! Harga beras UMKM naik 50%. Beli dari UMKM hari ini untuk mendukung petani!',
         });
       }
 
@@ -1025,6 +1080,7 @@ export const useGameStore = create((set, get) => ({
       const newHappiness = clamp(state.happiness + happinessDelta);
 
       return {
+        members: newMembers,
         supplierStockPT: newSupplierStockPT,
         supplierStockUMKM: adjustedUMKMStock,
         supplierPricesUMKM: adjustedUMKMPrices,
@@ -1194,7 +1250,7 @@ function recalcStockCapacity(furniture) {
  * Ensures at least 3 loan requests in the month, spread across random days.
  * Only eligible members (no current active loan) are selected.
  */
-function generateMonthlyLoanSchedule(monthStart, members, activeLoans) {
+function generateMonthlyLoanSchedule(monthStart, members, activeLoans, currentDayNumber) {
   if (members.length === 0) return [];
 
   const daysInMonth = monthStart.daysInMonth();
@@ -1212,33 +1268,30 @@ function generateMonthlyLoanSchedule(monthStart, members, activeLoans) {
     const member = eligibleMembers[i % eligibleMembers.length];
     const dayInMonth = randomInt(2, daysInMonth); // Avoid day 1 (processing day)
 
-    // Calculate absolute day number — this is approximate; will be matched by dayNumber
+    // Calculate absolute day number
     const targetDate = monthStart.date(dayInMonth);
     const diffFromStart = targetDate.diff(monthStart, 'day');
+    const scheduledAbsoluteDay = currentDayNumber ? currentDayNumber + diffFromStart : dayInMonth;
 
-    // Loan amount ranges
-    const amounts = [500000, 1000000, 1500000, 2000000, 3000000, 5000000];
-    const tenors = [3, 6, 12];
-    const alasanList = [
-      'Modal usaha warung',
-      'Beli gerobak jualan',
-      'Modal ternak ayam',
-      'Beli mesin jahit',
-      'Modal toko kelontong',
-      'Perbaikan rumah untuk usaha',
-      'Modal pertanian',
-      'Beli peralatan bengkel',
+    // Loan amount ranges (kelipatan 100k between 500k and 1m)
+    const amounts = [500000, 600000, 700000, 800000, 900000, 1000000];
+    const tenors = [1];
+    const pairs = [
+      { barang: 'rice', alasan: 'Meningkatkan produksi beras' },
+      { barang: 'cookingOil', alasan: 'Memperbesar produksi minyak goreng' },
+      { barang: 'lpgGas', alasan: 'Menambah armada distribusi gas LPG' }
     ];
-    const barangOptions = ['rice', 'cookingOil', 'lpgGas', null, null];
+    
+    const pickedPair = pickRandom(pairs);
 
     schedule.push({
-      dayNumber: dayInMonth,
+      dayNumber: scheduledAbsoluteDay,
       memberId: member.id,
-      memberName: member.name,
+      memberName: member.nama || member.name,
       jumlahPinjaman: pickRandom(amounts),
       tenorBulan: pickRandom(tenors),
-      alasan: pickRandom(alasanList),
-      barangTerkait: pickRandom(barangOptions),
+      alasan: pickedPair.alasan,
+      barangTerkait: pickedPair.barang,
     });
   }
 

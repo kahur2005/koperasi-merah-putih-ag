@@ -1249,6 +1249,10 @@ input:focus-visible {
   background: #ffe8e5;
 }
 
+.planner-day.has-shu {
+  background: #e6f6ee;
+}
+
 .planner-dots {
   position: absolute;
   left: 8px;
@@ -1259,6 +1263,7 @@ input:focus-visible {
 
 .dot-harvest,
 .dot-crisis,
+.dot-shu,
 .planner-legend i {
   width: 8px;
   height: 8px;
@@ -1272,6 +1277,10 @@ input:focus-visible {
 
 .dot-crisis {
   background: var(--accent-red);
+}
+
+.dot-shu {
+  background: var(--accent-green);
 }
 
 .planner-memo {

@@ -34,8 +34,8 @@ export default function TopBar() {
         </div>
       </div>
 
-      {/* Happiness and Members */}
-      <div className="stat-pills">
+      {/* Right Side: Happiness, Members, Money */}
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
         <div className={`stat-pill happiness-pill ${happinessClass}`} title={UI.KEBAHAGIAAN}>
           <span>😊</span>
           <span>{happiness}%</span>
@@ -48,12 +48,11 @@ export default function TopBar() {
           <img src="/assets/images/icon_anggota.png" alt="Anggota" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
           <span>{memberCount}</span>
         </button>
-      </div>
 
-      {/* Saldo / Money */}
-      <div className="stat-pill money-pill">
-        <img src="/assets/images/icon_uang.png" alt="Saldo" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
-        <span>{formatRupiah(money)}</span>
+        <div className="stat-pill money-pill">
+          <img src="/assets/images/icon_uang.png" alt="Saldo" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+          <span>{formatRupiah(money)}</span>
+        </div>
       </div>
     </div>
   );

@@ -90,9 +90,9 @@ export const UI = {
   // === EVENTS ===
   GAGAL_PANEN: 'Gagal Panen Beras',
   GAGAL_PANEN_DESC: 'Harga beras UMKM naik 50%! Beli dari UMKM untuk jaga kebahagiaan rakyat.',
-  BAGI_HASIL: 'Bagi Hasil Bulanan',
-  BAGI_HASIL_DESC: 'Saatnya membagikan hasil kepada anggota koperasi.',
-  PERSEN_BAGI_HASIL: 'Persentase Bagi Hasil',
+  BAGI_HASIL: 'SHU (Sisa Hasil Usaha)',
+  BAGI_HASIL_DESC: 'Saatnya membagikan sisa hasil usaha kepada anggota koperasi.',
+  PERSEN_BAGI_HASIL: 'Persentase SHU',
   PER_ANGGOTA: 'Per Anggota',
   TOTAL_BIAYA: 'Total Biaya',
   EFEK_KEBAHAGIAAN: 'Efek Kebahagiaan',

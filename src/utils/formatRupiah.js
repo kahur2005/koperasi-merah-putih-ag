@@ -8,5 +8,6 @@
  * @returns {string} String terformat, contoh: "Rp 1.500.000"
  */
 export function formatRupiah(amount) {
+  if (amount == null) amount = 0;
   return 'Rp ' + amount.toLocaleString('id-ID');
 }
