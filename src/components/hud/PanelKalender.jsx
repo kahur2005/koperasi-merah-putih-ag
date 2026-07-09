@@ -201,7 +201,7 @@ export default function PanelKalender() {
             <div className="planner-legend">
               <span><i className="dot-harvest" /> Gagal panen</span>
               <span><i className="dot-crisis" /> Krisis ekonomi</span>
-              <span><i className="dot-shu" style={{ backgroundColor: 'var(--accent-green)', width: '8px', height: '8px', borderRadius: '50%', display: 'inline-block' }} /> SHU (Sisa Hasil Usaha)</span>
+              <span><i className="dot-shu" style={{ backgroundColor: 'var(--accent-green)', width: '8px', height: '8px', borderRadius: 0, display: 'inline-block' }} /> SHU (Sisa Hasil Usaha)</span>
             </div>
           </aside>
         </div>
