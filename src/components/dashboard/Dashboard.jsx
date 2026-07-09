@@ -72,20 +72,15 @@ export default function Dashboard() {
         })}
       </div>
 
-      <nav className="right-sidebar" aria-label="Menu utama">
-        <button className="sidebar-btn" onClick={() => setActiveModal('museum')} title={UI.MUSEUM}>
-          <span className="emoji">🏛</span>
-          <span>{UI.MUSEUM}</span>
+      <nav className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }} aria-label="Menu utama">
+        <button className="retro-image-btn" onClick={() => setActiveModal('museum')} title={UI.MUSEUM}>
+          <img src="/assets/images/ui/btn_museum.png" alt="Museum" style={{ width: '90px' }} />
         </button>
-        <button className="sidebar-btn" onClick={() => setActiveModal('pasar')} title={UI.PASAR}>
-          <span className="emoji">🛒</span>
-          <span>{UI.PASAR}</span>
+        <button className="retro-image-btn" onClick={() => setActiveModal('pasar')} title={UI.PASAR}>
+          <img src="/assets/images/ui/btn_pasar.png" alt="Pasar" style={{ width: '90px' }} />
         </button>
-        <button className="sidebar-btn" onClick={() => setActiveModal('harga')} title={UI.HARGA}>
-          <span className="emoji">
-            <img src="/assets/images/icon_uang.png" alt="Harga" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
-          </span>
-          <span>{UI.HARGA}</span>
+        <button className="retro-image-btn" onClick={() => setActiveModal('harga')} title={UI.HARGA}>
+          <img src="/assets/images/ui/btn_harga.png" alt="Harga" style={{ width: '90px' }} />
         </button>
       </nav>
 

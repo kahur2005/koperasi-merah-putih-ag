@@ -60,7 +60,7 @@ export default function TokoFurnitur({ selectedId, setSelectedId }) {
   };
 
   return (
-    <aside className="three-sidebar tycoon-panel" aria-label={UI.TOKO_FURNITUR}>
+    <aside className="three-sidebar wooden-panel" aria-label={UI.TOKO_FURNITUR}>
       <div className="shop-header">
         <div>
           <span className="panel-kicker">Manajemen Toko</span>
