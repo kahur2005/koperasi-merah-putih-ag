@@ -167,7 +167,7 @@ export default function Dashboard() {
       {activeModal === 'museum' && <PanelMuseum />}
 
       {activeModal === 'gameOver' && gameResult && (
-        <div className="modal-overlay" style={{ background: 'rgba(15, 23, 42, 0.95)' }}>
+        <div className="modal-overlay" style={{ background: 'rgba(36, 26, 16, 0.95)' }}>
           <div className="modal-content glass-card" style={{ maxWidth: '460px', textAlign: 'center', padding: '32px' }}>
             <h1 style={{ fontSize: '28px', color: gameResult.outcome === 'win' ? 'var(--accent-green)' : 'var(--accent-red)', marginBottom: '12px' }}>
               {gameResult.outcome === 'win' ? '🏆 SELAMAT! KAMU MENANG!' : '❌ PERMAINAN BERAKHIR'}
@@ -176,7 +176,7 @@ export default function Dashboard() {
               {gameResult.reason}
             </p>
 
-            <div className="glass-card" style={{ background: 'rgba(15,23,42,0.4)', padding: '16px', marginBottom: '24px', textAlign: 'left' }}>
+            <div className="glass-card" style={{ background: 'var(--paper-2)', border: '3px solid var(--wood-dark)', padding: '16px', marginBottom: '24px', textAlign: 'left' }}>
               <h3 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>Statistik Koperasi</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>

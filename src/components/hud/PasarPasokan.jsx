@@ -73,24 +73,22 @@ export default function PasarPasokan() {
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content glass-card" style={{ maxWidth: '640px' }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content glass-card modal-wide" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{UI.PASAR_PASOKAN}</h2>
           <button className="modal-close" onClick={handleClose}>&times;</button>
         </div>
 
         {/* Supplier Tabs */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-          <button 
-            className="btn" 
-            style={{ flex: 1, background: activeTab === 'PT' ? 'var(--accent-blue)' : 'var(--bg-secondary)', color: '#FFF' }}
+        <div className="tab-row">
+          <button
+            className={`tab-btn tab-pt ${activeTab === 'PT' ? 'active' : ''}`}
             onClick={() => { setActiveTab('PT'); setErrorMsg(''); }}
           >
             🏢 {UI.PEMASOK_PT}
           </button>
-          <button 
-            className="btn" 
-            style={{ flex: 1, background: activeTab === 'UMKM' ? 'var(--accent-orange)' : 'var(--bg-secondary)', color: '#FFF' }}
+          <button
+            className={`tab-btn tab-umkm ${activeTab === 'UMKM' ? 'active' : ''}`}
             onClick={() => { setActiveTab('UMKM'); setErrorMsg(''); }}
           >
             🌾 {UI.PEMASOK_UMKM}
@@ -98,17 +96,17 @@ export default function PasarPasokan() {
         </div>
 
         {/* Warning about happiness */}
-        <div style={{ padding: '8px 12px', background: 'rgba(15,23,42,0.4)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+        <div className={`info-note ${isPT ? 'warn' : 'good'}`}>
           {isPT ? (
-            <span style={{ color: 'var(--accent-red)' }}>⚠️ Pembelian dari PT menghemat biaya tapi menurunkan Kebahagiaan warga (-2% per transaksi).</span>
+            <span>⚠️ Pembelian dari PT menghemat biaya tapi menurunkan Kebahagiaan warga (-2% per transaksi).</span>
           ) : (
-            <span style={{ color: 'var(--accent-green)' }}>☘️ Pembelian dari UMKM Desa meningkatkan Kebahagiaan warga (+2% per transaksi) & mendukung ekonomi lokal!</span>
+            <span>☘️ Pembelian dari UMKM Desa meningkatkan Kebahagiaan warga (+2% per transaksi) & mendukung ekonomi lokal!</span>
           )}
         </div>
 
         {/* Error message */}
         {errorMsg && (
-          <div style={{ padding: '8px 12px', background: 'rgba(220,38,38,0.15)', border: '1px solid var(--accent-red)', color: '#FEE2E2', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>
+          <div className="info-note error">
             {errorMsg}
           </div>
         )}
@@ -169,15 +167,15 @@ export default function PasarPasokan() {
         </table>
 
         {/* Live Total Cost Preview */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+        <div className="modal-footer-row">
           <div>
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Saldo Kas Koperasi: </span>
-            <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent-yellow)' }}>{formatRupiah(money)}</span>
+            <span>Saldo Kas Koperasi: </span>
+            <span>{formatRupiah(money)}</span>
           </div>
           {Object.values(quantities).some(q => q > 0) && (
             <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Estimasi Total: </span>
-              <span style={{ fontSize: '16px', fontWeight: '800', color: 'var(--accent-green)' }}>
+              <span>Estimasi Total: </span>
+              <span>
                 {formatRupiah(items.reduce((acc, it) => acc + (prices[it.key] * quantities[it.key]), 0))}
               </span>
             </div>

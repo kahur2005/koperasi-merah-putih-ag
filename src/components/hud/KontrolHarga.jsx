@@ -106,7 +106,7 @@ export default function KontrolHarga() {
         </table>
 
         {/* Info panel */}
-        <div style={{ padding: '10px 14px', background: 'rgba(15,23,42,0.4)', borderRadius: '8px', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '16px', lineHeight: '1.4' }}>
+        <div className="info-note">
           <ul style={{ listStyleType: 'disc', paddingLeft: '16px' }}>
             <li>Harga Modal didasarkan pada rata-rata harga beli terakhir dari PT & UMKM.</li>
             <li>Markup &gt; 30%: Menurunkan Kebahagiaan warga sebesar 1% setiap kali barang tersebut terjual.</li>
