@@ -19,6 +19,7 @@ export default function Dashboard() {
   const activeEvents = useGameStore((s) => s.activeEvents);
   const setView = useGameStore((s) => s.setView);
   const setActiveModal = useGameStore((s) => s.setActiveModal);
+  const openRestockPanel = useGameStore((s) => s.openRestockPanel);
   const resetGame = useGameStore((s) => s.resetGame);
   const gameResult = useGameStore((s) => s.gameResult);
 
@@ -52,7 +53,7 @@ export default function Dashboard() {
         <button className="retro-image-btn" onClick={() => setActiveModal('museum')} title={UI.MUSEUM}>
           <img src="/assets/images/ui/btn_museum.png" alt="Museum" style={{ width: '90px' }} />
         </button>
-        <button className="retro-image-btn" onClick={() => setActiveModal('pasar')} title={UI.PASAR}>
+        <button className="retro-image-btn" onClick={() => openRestockPanel()} title={UI.PASAR}>
           <img src="/assets/images/ui/btn_pasar.png" alt="Pasar" style={{ width: '90px' }} />
         </button>
         <button className="retro-image-btn" onClick={() => setActiveModal('harga')} title={UI.HARGA}>

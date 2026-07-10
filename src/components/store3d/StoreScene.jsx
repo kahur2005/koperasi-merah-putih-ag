@@ -5,11 +5,21 @@ import { useGameStore } from '../../store/gameStore';
 import StoreFloor from './StoreFloor';
 import Furniture from './Furniture';
 import TokoFurnitur from './TokoFurnitur';
+import PasarPasokan from '../hud/PasarPasokan';
+
+const RESTOCK_ITEM_BY_FURNITURE = {
+  riceRack: 'rice',
+  oilRack: 'cookingOil',
+  goodsRack: 'rice',
+  lpgStack: 'lpgGas',
+};
 
 export default function StoreScene() {
   const furniturePositions = useGameStore((s) => s.furniturePositions);
   const placementMode = useGameStore((s) => s.placementMode);
   const confirmPlacement = useGameStore((s) => s.confirmPlacement);
+  const activeModal = useGameStore((s) => s.activeModal);
+  const openRestockPanel = useGameStore((s) => s.openRestockPanel);
 
   const storeSize = useGameStore((s) => s.storeSize);
   const updatePlacement = useGameStore((s) => s.updatePlacement);
@@ -20,6 +30,10 @@ export default function StoreScene() {
   const handleFurnitureClick = (id) => {
     if (placementMode) return;
     setSelectedId(id);
+    const item = RESTOCK_ITEM_BY_FURNITURE[furniturePositions.find((f) => f.id === id)?.type];
+    if (item) {
+      openRestockPanel(item);
+    }
   };
 
   const getSnappedPosition = (point) => {
@@ -165,6 +179,7 @@ export default function StoreScene() {
 
       {/* HTML overlay sidebar */}
       <TokoFurnitur selectedId={selectedId} setSelectedId={setSelectedId} />
+      {activeModal === 'pasar' && <PasarPasokan />}
     </div>
   );
 }

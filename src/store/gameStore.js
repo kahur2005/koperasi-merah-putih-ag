@@ -11,9 +11,9 @@ import {
   HAPPINESS,
   EVENTS,
   WIN_CONDITIONS,
-} from '../constants/gameConstants';
-import { NPC_DATABASE } from '../data/npcData';
-import { randomInt, pickRandom, shuffleArray, seededRandom } from '../utils/random';
+} from '../constants/gameConstants.js';
+import { NPC_DATABASE } from '../data/npcData.js';
+import { randomInt, pickRandom, shuffleArray, seededRandom } from '../utils/random.js';
 
 // ─── Helper: clamp happiness between 0 and 100 ────────────────────────────────
 const clamp = (val, min = 0, max = 100) => Math.max(min, Math.min(max, val));
@@ -104,8 +104,10 @@ const createInitialState = () => ({
   krisisDaysRemaining: 0,
 
   // UI state
+  gamePhase: 'storeOpen',
   currentView: 'dashboard',
   activeModal: null,
+  restockFocusItem: null,
   storyIntroSeen: false,
   notifications: [],
   selectedNpc: null,
@@ -139,9 +141,18 @@ export const useGameStore = create((set, get) => ({
   setView: (view) => set({ currentView: view }),
 
   /** 2. setActiveModal */
-  setActiveModal: (modal) => set({ activeModal: modal }),
+  setActiveModal: (modal) => set({
+    activeModal: modal,
+    ...(modal !== 'pasar' ? { restockFocusItem: null } : {}),
+  }),
 
-  /** 2b. completeStoryIntro */
+  /** 2a. openRestockPanel */
+  openRestockPanel: (item = null) => set({ activeModal: 'pasar', restockFocusItem: item }),
+
+  /** 2b. openStoreForDay */
+  openStoreForDay: () => set({ gamePhase: 'storeOpen', activeModal: null, restockFocusItem: null }),
+
+  /** 2c. completeStoryIntro */
   completeStoryIntro: () =>
     set((state) => ({
       storyIntroSeen: true,
@@ -328,6 +339,11 @@ export const useGameStore = create((set, get) => ({
   /** 11. buySupply */
   buySupply: (supplier, item, quantity) =>
     set((state) => {
+      if (state.gamePhase !== 'restockPhase') return {};
+      if (!Number.isInteger(quantity) || quantity <= 0) return {};
+      if (!state.stock[item] && state.stock[item] !== 0) return {};
+      if (supplier !== 'PT' && supplier !== 'UMKM') return {};
+
       // Determine supplier stock & prices
       const isPT = supplier === 'PT';
       const supplierStock = isPT ? state.supplierStockPT : state.supplierStockUMKM;
@@ -383,6 +399,76 @@ export const useGameStore = create((set, get) => ({
               actionModal: 'harga',
             })
           : {}),
+      };
+    }),
+
+  /** 11b. autoRestockSupply */
+  autoRestockSupply: (supplier, item) =>
+    set((state) => {
+      if (state.gamePhase !== 'restockPhase') return {};
+      if (!state.stock[item] && state.stock[item] !== 0) return {};
+      if (supplier !== 'PT' && supplier !== 'UMKM') return {};
+
+      const isPT = supplier === 'PT';
+      const supplierStock = isPT ? state.supplierStockPT : state.supplierStockUMKM;
+      const prices = isPT ? SUPPLIERS.PT.prices : state.supplierPricesUMKM;
+      const unitPrice = prices[item];
+      const needed = Math.max(0, state.stockCapacity[item] - state.stock[item]);
+      const affordable = unitPrice > 0 ? Math.floor(state.money / unitPrice) : 0;
+      const quantity = Math.min(needed, supplierStock[item] || 0, affordable);
+
+      if (quantity <= 0) {
+        return {
+          notifications: [
+            ...state.notifications,
+            {
+              id: uid(),
+              text: needed <= 0
+                ? 'Stok sudah penuh. Tidak perlu restok otomatis.'
+                : 'Restok otomatis gagal: saldo, kapasitas, atau stok pemasok tidak cukup.',
+            },
+          ],
+        };
+      }
+
+      const totalCost = unitPrice * quantity;
+      const newStock = { ...state.stock, [item]: state.stock[item] + quantity };
+      const newSupplierStock = { ...supplierStock, [item]: supplierStock[item] - quantity };
+      const supplierStockKey = isPT ? 'supplierStockPT' : 'supplierStockUMKM';
+      const priceKey = isPT ? 'lastPT' : 'lastUMKM';
+      const newPurchasePrices = {
+        ...state.purchasePrices,
+        [item]: {
+          ...state.purchasePrices[item],
+          [priceKey]: unitPrice,
+        },
+      };
+
+      const happinessDelta = isPT ? -2 : 2;
+      const newBoughtFromUMKM = isPT ? state.boughtFromUMKMToday : true;
+      const fullyRestocked = quantity === needed;
+      const itemLabel = {
+        rice: 'beras',
+        cookingOil: 'minyak goreng',
+        lpgGas: 'gas LPG',
+      }[item] || 'barang';
+
+      return {
+        money: state.money - totalCost,
+        stock: newStock,
+        [supplierStockKey]: newSupplierStock,
+        purchasePrices: newPurchasePrices,
+        happiness: clamp(state.happiness + happinessDelta),
+        boughtFromUMKMToday: newBoughtFromUMKM,
+        notifications: [
+          ...state.notifications,
+          {
+            id: uid(),
+            text: fullyRestocked
+              ? `Restok otomatis mengisi penuh ${itemLabel}: ${quantity} unit.`
+              : `Restok otomatis hanya membeli ${quantity}/${needed} unit ${itemLabel} karena batas saldo atau stok pemasok.`,
+          },
+        ],
       };
     }),
 
@@ -684,6 +770,7 @@ export const useGameStore = create((set, get) => ({
         krisisDaysRemaining: newKrisisDaysRemaining,
         dayReport,
         activeModal: gameOver ? 'gameOver' : modalToShow,
+        gamePhase: gameOver ? state.gamePhase : 'closingReport',
         currentDate: newDate,
         dayNumber: newDayNumber,
         gameOver,
@@ -1096,7 +1183,9 @@ export const useGameStore = create((set, get) => ({
         activeEvents: newActiveEvents,
         eventLog: newEventLog,
         boughtFromUMKMToday: resetBoughtFromUMKM,
-        activeModal: gameOver ? 'gameOver' : null,
+        activeModal: gameOver ? 'gameOver' : 'pasar',
+        gamePhase: gameOver ? state.gamePhase : 'restockPhase',
+        restockFocusItem: null,
         happiness: newHappiness,
         statistics: statsUpdate,
         gameOver,

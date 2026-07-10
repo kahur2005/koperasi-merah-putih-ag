@@ -8,7 +8,6 @@ export default function LaporanHarian() {
   const dayReport = useGameStore((s) => s.dayReport);
   const sellingPrices = useGameStore((s) => s.sellingPrices);
   const startNewDay = useGameStore((s) => s.startNewDay);
-  const setActiveModal = useGameStore((s) => s.setActiveModal);
 
   if (!dayReport) return null;
 
@@ -103,7 +102,7 @@ export default function LaporanHarian() {
         </div>
 
         <button className="btn btn-primary btn-endday" style={{ width: '100%', padding: '16px' }} onClick={handleNextDay}>
-          {UI.BTN_LANJUT}
+          Lanjut ke Restok Pasokan
         </button>
       </div>
     </div>

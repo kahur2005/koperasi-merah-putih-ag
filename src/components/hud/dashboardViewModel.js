@@ -40,7 +40,14 @@ export function getDashboardAdvisory(state, chapterProgress) {
     actionType: nextGoal?.id === 'money' || nextGoal?.id === 'stock' || nextGoal?.id === 'capacity' ? 'pasar' : 'store3d',
   };
 
-  if (state.activeEvents.some((event) => event.type === 'gagalPanen')) {
+  if (state.gamePhase === 'restockPhase') {
+    advisory = {
+      title: 'Fase restok pasokan',
+      body: 'Toko masih tutup. Isi stok secara manual atau otomatis sebelum membuka hari baru.',
+      action: 'Buka Pasar',
+      actionType: 'pasar',
+    };
+  } else if (state.activeEvents.some((event) => event.type === 'gagalPanen')) {
     advisory = {
       title: 'Gagal panen sedang terjadi',
       body: 'Prioritaskan belanja dari UMKM agar petani tetap terbantu dan kebahagiaan warga tidak jatuh.',
@@ -71,7 +78,7 @@ export function getDashboardAdvisory(state, chapterProgress) {
   } else if (lowestStock.cap > 0 && lowestStock.ratio < 0.35) {
     advisory = {
       title: `Stok ${lowestStock.label} mulai tipis`,
-      body: `Gudang hanya berisi ${lowestStock.value}/${lowestStock.cap}. Belanja pasokan sebelum penjualan harian.`,
+      body: `Gudang hanya berisi ${lowestStock.value}/${lowestStock.cap}. Tutup toko dulu, lalu restok sebelum hari baru dibuka.`,
       action: 'Buka Pasar',
       actionType: 'pasar',
     };

@@ -33,7 +33,9 @@ export default function AdvisoryMemo() {
   const pendingApplications = useGameStore((s) => s.pendingApplications);
   const pendingLoanRequests = useGameStore((s) => s.pendingLoanRequests);
   const activeEvents = useGameStore((s) => s.activeEvents);
+  const gamePhase = useGameStore((s) => s.gamePhase);
   const setActiveModal = useGameStore((s) => s.setActiveModal);
+  const openRestockPanel = useGameStore((s) => s.openRestockPanel);
   const setView = useGameStore((s) => s.setView);
 
   const { activeChapter, nextGoal } = getChapterProgress(snapshot);
@@ -47,16 +49,23 @@ export default function AdvisoryMemo() {
     body: `Fokus bab ini: ${nextGoal?.label || 'selesaikan target koperasi'}. ${activeChapter.summary}`,
     action: nextGoal?.id === 'money' || nextGoal?.id === 'stock' || nextGoal?.id === 'capacity' ? 'Buka Pasar' : 'Masuk Toko',
     onAction: nextGoal?.id === 'money' || nextGoal?.id === 'stock' || nextGoal?.id === 'capacity'
-      ? () => setActiveModal('pasar')
+      ? () => openRestockPanel()
       : () => setView('store3d'),
   };
 
-  if (activeEvents.some((event) => event.type === 'gagalPanen')) {
+  if (gamePhase === 'restockPhase') {
+    memo = {
+      title: 'Fase restok pasokan',
+      body: 'Toko masih tutup. Isi stok secara manual atau otomatis sebelum membuka hari baru.',
+      action: 'Buka Pasar',
+      onAction: () => openRestockPanel(),
+    };
+  } else if (activeEvents.some((event) => event.type === 'gagalPanen')) {
     memo = {
       title: 'Gagal panen sedang terjadi',
       body: 'Prioritaskan belanja dari UMKM agar petani tetap terbantu dan kebahagiaan warga tidak jatuh.',
       action: 'Buka Pasar',
-      onAction: () => setActiveModal('pasar'),
+      onAction: () => openRestockPanel(),
     };
   } else if (activeEvents.some((event) => event.type === 'krisisEkonomi')) {
     memo = {
@@ -82,9 +91,9 @@ export default function AdvisoryMemo() {
   } else if (lowestStock.cap > 0 && lowestStock.ratio < 0.35) {
     memo = {
       title: `Stok ${lowestStock.label} mulai tipis`,
-      body: `Gudang hanya berisi ${lowestStock.value}/${lowestStock.cap}. Belanja pasokan sebelum penjualan harian.`,
+      body: `Gudang hanya berisi ${lowestStock.value}/${lowestStock.cap}. Tutup toko dulu, lalu restok sebelum hari baru dibuka.`,
       action: 'Buka Pasar',
-      onAction: () => setActiveModal('pasar'),
+      onAction: () => openRestockPanel(),
     };
   } else if (happiness < targetHappiness) {
     memo = {

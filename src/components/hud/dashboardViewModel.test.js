@@ -6,6 +6,7 @@ const baseState = {
   money: 5_000_000,
   happiness: 60,
   memberCount: 3,
+  gamePhase: 'storeOpen',
   stock: { rice: 4, cookingOil: 8, lpgGas: 2 },
   stockCapacity: { rice: 10, cookingOil: 10, lpgGas: 10 },
   furniture: { cashier: 1 },
@@ -64,7 +65,22 @@ test('getDashboardAdvisory identifies the lowest low-stock item when no higher a
 
   assert.deepEqual(advisory, {
     title: 'Stok gas LPG mulai tipis',
-    body: 'Gudang hanya berisi 2/10. Belanja pasokan sebelum penjualan harian.',
+    body: 'Gudang hanya berisi 2/10. Tutup toko dulu, lalu restok sebelum hari baru dibuka.',
+    action: 'Buka Pasar',
+    actionType: 'pasar',
+  });
+});
+
+test('getDashboardAdvisory prioritizes active restock phase', () => {
+  const advisory = getDashboardAdvisory({
+    ...baseState,
+    gamePhase: 'restockPhase',
+    activeEvents: [{ type: 'gagalPanen' }],
+  });
+
+  assert.deepEqual(advisory, {
+    title: 'Fase restok pasokan',
+    body: 'Toko masih tutup. Isi stok secara manual atau otomatis sebelum membuka hari baru.',
     action: 'Buka Pasar',
     actionType: 'pasar',
   });
