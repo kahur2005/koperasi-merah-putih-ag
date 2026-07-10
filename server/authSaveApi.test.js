@@ -107,3 +107,44 @@ test('authenticated user can upsert and load only their own main save', async ()
   assert.equal(loadedB.status, 200);
   assert.equal(loadedB.body.hasSave, false);
 });
+
+test('authenticated user can keep separate auto and manual save slots', async () => {
+  const repository = createMemoryAuthSaveRepository();
+  const app = createAuthSaveApp({ repository, jwtSecret: JWT_SECRET });
+
+  const user = await request(app, '/api/auth/register', {
+    method: 'POST',
+    body: { username: 'dewi', password: 'secret123' },
+  });
+  const headers = { authorization: `Bearer ${user.body.token}` };
+
+  const autoSave = await request(app, '/api/save', {
+    method: 'POST',
+    headers,
+    body: {
+      saveName: 'Auto Save',
+      gameState: { dayNumber: 3, money: 300000, happiness: 52, memberCount: 1 },
+    },
+  });
+  assert.equal(autoSave.status, 200);
+  assert.equal(autoSave.body.save.saveName, 'Auto Save');
+
+  const manualSave = await request(app, '/api/save', {
+    method: 'POST',
+    headers,
+    body: {
+      saveName: 'Manual Save',
+      gameState: { dayNumber: 5, money: 500000, happiness: 70, memberCount: 2 },
+    },
+  });
+  assert.equal(manualSave.status, 200);
+  assert.equal(manualSave.body.save.saveName, 'Manual Save');
+
+  const loaded = await request(app, '/api/save', { headers });
+
+  assert.equal(loaded.status, 200);
+  assert.equal(loaded.body.hasSave, true);
+  assert.equal(loaded.body.saves.auto.gameState.dayNumber, 3);
+  assert.equal(loaded.body.saves.manual.gameState.dayNumber, 5);
+  assert.equal(loaded.body.saveSlots.length, 2);
+});

@@ -8,6 +8,7 @@ import PhaseTransition from './components/hud/PhaseTransition';
 import AuthScreen from './components/auth/AuthScreen';
 import GameEntryScreen from './components/auth/GameEntryScreen';
 import ConfirmNewGameModal from './components/auth/ConfirmNewGameModal';
+import SettingsModal from './components/auth/SettingsModal';
 import { authSaveClient } from './api/authSaveClient';
 import './index.css';
 
@@ -45,9 +46,11 @@ export default function App() {
   const [entryError, setEntryError] = useState('');
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_STORAGE_KEY));
-  const [save, setSave] = useState(null);
+  const [saves, setSaves] = useState({ auto: null, manual: null });
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [saveStatus, setSaveStatus] = useState('idle');
+  const [manualSaving, setManualSaving] = useState(false);
   const saveTimerRef = useRef(null);
   const tokenRef = useRef(token);
   const appPhaseRef = useRef(appPhase);
@@ -67,18 +70,22 @@ export default function App() {
     appPhaseRef.current = appPhase;
   }, [appPhase]);
 
-  const persistGameState = useCallback(async () => {
+  const persistGameState = useCallback(async (saveName = 'Auto Save') => {
     const activeToken = tokenRef.current;
     if (!activeToken || appPhaseRef.current !== 'game') return;
 
     setSaveStatus('saving');
     try {
       const snapshot = useGameStore.getState().exportGameStateForSave();
-      const result = await authSaveClient.saveGame(activeToken, snapshot);
-      setSave((currentSave) => ({
-        ...(currentSave || {}),
-        ...(result.save || {}),
-        gameState: snapshot,
+      const result = await authSaveClient.saveGame(activeToken, snapshot, saveName);
+      const slot = result.save?.saveName === 'Manual Save' ? 'manual' : 'auto';
+      setSaves((currentSaves) => ({
+        ...currentSaves,
+        [slot]: {
+          ...(currentSaves[slot] || {}),
+          ...(result.save || {}),
+          gameState: snapshot,
+        },
       }));
       setSaveStatus('saved');
     } catch (error) {
@@ -120,14 +127,14 @@ export default function App() {
 
         if (cancelled) return;
         setUser(activeUser);
-        setSave(saveResult.hasSave ? saveResult.save : null);
+        setSaves(saveResult.saves || { auto: saveResult.save || null, manual: null });
         setAppPhase('gameEntry');
       } catch {
         if (cancelled) return;
         localStorage.removeItem(TOKEN_STORAGE_KEY);
         setToken(null);
         setUser(null);
-        setSave(null);
+        setSaves({ auto: null, manual: null });
         setAppPhase('auth');
       } finally {
         if (!cancelled) setAuthLoading(false);
@@ -142,7 +149,7 @@ export default function App() {
 
   const refreshSave = useCallback(async (activeToken) => {
     const saveResult = await authSaveClient.getSave(activeToken);
-    setSave(saveResult.hasSave ? saveResult.save : null);
+    setSaves(saveResult.saves || { auto: saveResult.save || null, manual: null });
   }, []);
 
   const handleAuthSubmit = async (credentials) => {
@@ -164,9 +171,10 @@ export default function App() {
     }
   };
 
-  const handleContinue = () => {
-    if (!save?.gameState) return;
-    loadGameStateFromSave(save.gameState);
+  const handleContinue = (slot = 'auto') => {
+    const selectedSave = saves[slot] || saves.auto || saves.manual;
+    if (!selectedSave?.gameState) return;
+    loadGameStateFromSave(selectedSave.gameState);
     setSaveStatus('saved');
     setEntryError('');
     appPhaseRef.current = 'game';
@@ -186,11 +194,20 @@ export default function App() {
   };
 
   const handleStartNew = () => {
-    if (save) {
+    if (saves.auto || saves.manual) {
       setShowNewGameConfirm(true);
       return;
     }
     beginNewGame();
+  };
+
+  const handleManualSave = async () => {
+    setManualSaving(true);
+    try {
+      await persistGameState('Manual Save');
+    } finally {
+      setManualSaving(false);
+    }
   };
 
   const handleLogout = () => {
@@ -198,7 +215,8 @@ export default function App() {
     window.clearTimeout(saveTimerRef.current);
     setToken(null);
     setUser(null);
-    setSave(null);
+    setSaves({ auto: null, manual: null });
+    setShowSettings(false);
     setAppPhase('auth');
     setSaveStatus('idle');
     startNewGame();
@@ -242,7 +260,7 @@ export default function App() {
       <div className="app">
         <GameEntryScreen
           user={user}
-          save={save}
+          saves={saves}
           loading={authLoading}
           error={entryError}
           onContinue={handleContinue}
@@ -272,8 +290,18 @@ export default function App() {
                 ? 'Tersimpan'
                 : 'Autosave siap'}
         </strong>
-        <button type="button" onClick={handleLogout}>Logout</button>
+        <button type="button" onClick={() => setShowSettings(true)}>Settings</button>
       </div>
+
+      {showSettings && (
+        <SettingsModal
+          saveStatus={saveStatus}
+          manualSaving={manualSaving}
+          onManualSave={handleManualSave}
+          onLogout={handleLogout}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
 
       {currentView === 'dashboard' ? <Dashboard /> : <StoreScene />}
       {!storyIntroSeen && <StoryIntro />}

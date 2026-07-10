@@ -36,15 +36,15 @@ export const authSaveClient = {
 
   getSave: (token) => request('/api/save', { token }),
 
-  saveGame: (token, gameState) =>
+  saveGame: (token, gameState, saveName = 'Auto Save') =>
     request('/api/save', {
       token,
       method: 'POST',
-      body: JSON.stringify({ gameState }),
+      body: JSON.stringify({ saveName, gameState }),
     }),
 
-  deleteSave: (token) =>
-    request('/api/save', {
+  deleteSave: (token, saveName = 'Auto Save') =>
+    request(`/api/save?saveName=${encodeURIComponent(saveName)}`, {
       token,
       method: 'DELETE',
     }),

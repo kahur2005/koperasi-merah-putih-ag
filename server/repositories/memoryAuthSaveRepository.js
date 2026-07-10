@@ -25,13 +25,18 @@ export function createMemoryAuthSaveRepository() {
       return user;
     },
 
+    async findSavesByUserId(userId) {
+      return repository.saves.filter((save) => save.user_id === userId);
+    },
+
     async findMainSaveByUserId(userId) {
       return repository.saves.find((save) => save.user_id === userId && save.save_name === 'Main Save') || null;
     },
 
-    async upsertMainSave({ userId, gameState, dayNumber, money, happiness, memberCount }) {
-      const existingSave = await repository.findMainSaveByUserId(userId);
+    async upsertSave({ userId, saveName = 'Auto Save', gameState, dayNumber, money, happiness, memberCount }) {
+      const existingSave = repository.saves.find((save) => save.user_id === userId && save.save_name === saveName);
       const payload = {
+        save_name: saveName,
         game_state: gameState,
         day_number: dayNumber,
         money,
@@ -58,6 +63,14 @@ export function createMemoryAuthSaveRepository() {
 
     async deleteMainSave(userId) {
       repository.saves = repository.saves.filter((save) => !(save.user_id === userId && save.save_name === 'Main Save'));
+    },
+
+    async upsertMainSave(payload) {
+      return repository.upsertSave({ ...payload, saveName: 'Main Save' });
+    },
+
+    async deleteSave(userId, saveName = 'Auto Save') {
+      repository.saves = repository.saves.filter((save) => !(save.user_id === userId && save.save_name === saveName));
     },
   };
 

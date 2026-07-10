@@ -4,6 +4,17 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const TOKEN_EXPIRES_IN = '7d';
+const SAVE_NAMES = {
+  AUTO: 'Auto Save',
+  MANUAL: 'Manual Save',
+  LEGACY: 'Main Save',
+};
+
+function normalizeSaveName(value) {
+  if (value === SAVE_NAMES.MANUAL) return SAVE_NAMES.MANUAL;
+  if (value === SAVE_NAMES.LEGACY) return SAVE_NAMES.LEGACY;
+  return SAVE_NAMES.AUTO;
+}
 
 function publicUser(user) {
   return {
@@ -50,6 +61,38 @@ function summarizeGameState(gameState) {
     money: Number.isFinite(gameState?.money) ? gameState.money : null,
     happiness: Number.isFinite(gameState?.happiness) ? gameState.happiness : null,
     memberCount: Number.isFinite(gameState?.memberCount) ? gameState.memberCount : null,
+  };
+}
+
+function formatSave(save, { includeGameState = false } = {}) {
+  if (!save) return null;
+  return {
+    id: save.id,
+    saveName: save.save_name,
+    ...(includeGameState ? { gameState: save.game_state } : {}),
+    dayNumber: save.day_number,
+    money: save.money === null ? null : Number(save.money),
+    happiness: save.happiness === null ? null : Number(save.happiness),
+    memberCount: save.member_count,
+    updatedAt: save.updated_at,
+  };
+}
+
+function buildSavePayload(saves) {
+  const auto = saves.find((save) => save.save_name === SAVE_NAMES.AUTO)
+    || saves.find((save) => save.save_name === SAVE_NAMES.LEGACY)
+    || null;
+  const manual = saves.find((save) => save.save_name === SAVE_NAMES.MANUAL) || null;
+  const saveSlots = [auto, manual].filter(Boolean).map((save) => formatSave(save, { includeGameState: true }));
+
+  return {
+    hasSave: saveSlots.length > 0,
+    save: formatSave(auto || manual, { includeGameState: true }),
+    saves: {
+      auto: formatSave(auto, { includeGameState: true }),
+      manual: formatSave(manual, { includeGameState: true }),
+    },
+    saveSlots,
   };
 }
 
@@ -107,25 +150,8 @@ export function createAuthSaveApp({ repository, jwtSecret, clientOrigin = '*' })
   });
 
   app.get('/api/save', requireAuth, async (req, res) => {
-    const save = await repository.findMainSaveByUserId(req.user.id);
-    if (!save) {
-      res.json({ hasSave: false, save: null });
-      return;
-    }
-
-    res.json({
-      hasSave: true,
-      save: {
-        id: save.id,
-        saveName: save.save_name,
-        gameState: save.game_state,
-        dayNumber: save.day_number,
-        money: save.money === null ? null : Number(save.money),
-        happiness: save.happiness === null ? null : Number(save.happiness),
-        memberCount: save.member_count,
-        updatedAt: save.updated_at,
-      },
-    });
+    const saves = await repository.findSavesByUserId(req.user.id);
+    res.json(buildSavePayload(saves));
   });
 
   app.post('/api/save', requireAuth, async (req, res) => {
@@ -135,27 +161,20 @@ export function createAuthSaveApp({ repository, jwtSecret, clientOrigin = '*' })
       return;
     }
 
-    const save = await repository.upsertMainSave({
+    const save = await repository.upsertSave({
       userId: req.user.id,
+      saveName: normalizeSaveName(req.body?.saveName),
       gameState,
       ...summarizeGameState(gameState),
     });
 
     res.json({
-      save: {
-        id: save.id,
-        saveName: save.save_name,
-        dayNumber: save.day_number,
-        money: save.money === null ? null : Number(save.money),
-        happiness: save.happiness === null ? null : Number(save.happiness),
-        memberCount: save.member_count,
-        updatedAt: save.updated_at,
-      },
+      save: formatSave(save),
     });
   });
 
   app.delete('/api/save', requireAuth, async (req, res) => {
-    await repository.deleteMainSave(req.user.id);
+    await repository.deleteSave(req.user.id, normalizeSaveName(req.query?.saveName));
     res.status(204).end();
   });
 

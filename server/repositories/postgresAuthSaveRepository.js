@@ -36,12 +36,22 @@ export function createPostgresAuthSaveRepository(pool) {
       return result.rows[0] || null;
     },
 
-    async upsertMainSave({ userId, gameState, dayNumber, money, happiness, memberCount }) {
+    async findSavesByUserId(userId) {
+      const result = await pool.query(
+        `select * from game_saves
+         where user_id = $1
+         order by updated_at desc`,
+        [userId]
+      );
+      return result.rows;
+    },
+
+    async upsertSave({ userId, saveName = 'Auto Save', gameState, dayNumber, money, happiness, memberCount }) {
       const result = await pool.query(
         `insert into game_saves (
            user_id, save_name, game_state, day_number, money, happiness, member_count
          )
-         values ($1, 'Main Save', $2::jsonb, $3, $4, $5, $6)
+         values ($1, $2, $3::jsonb, $4, $5, $6, $7)
          on conflict (user_id, save_name)
          do update set
            game_state = excluded.game_state,
@@ -51,7 +61,7 @@ export function createPostgresAuthSaveRepository(pool) {
            member_count = excluded.member_count,
            updated_at = now()
          returning *`,
-        [userId, JSON.stringify(gameState), dayNumber, money, happiness, memberCount]
+        [userId, saveName, JSON.stringify(gameState), dayNumber, money, happiness, memberCount]
       );
       return result.rows[0];
     },
@@ -61,6 +71,18 @@ export function createPostgresAuthSaveRepository(pool) {
         `delete from game_saves
          where user_id = $1 and save_name = 'Main Save'`,
         [userId]
+      );
+    },
+
+    async upsertMainSave(payload) {
+      return this.upsertSave({ ...payload, saveName: 'Main Save' });
+    },
+
+    async deleteSave(userId, saveName = 'Auto Save') {
+      await pool.query(
+        `delete from game_saves
+         where user_id = $1 and save_name = $2`,
+        [userId, saveName]
       );
     },
   };
