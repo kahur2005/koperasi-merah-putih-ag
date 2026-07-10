@@ -36,15 +36,15 @@ export default function BagiHasil() {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content glass-card" style={{ maxWidth: '440px', padding: '24px' }}>
+      <div className="modal-content glass-card" style={{ maxWidth: '440px', padding: '31px' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '22px', fontWeight: '800' }}>💰 {UI.BAGI_HASIL}</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '4px' }}>
+          <h2 style={{ fontSize: '29px', fontWeight: '800' }}>💰 {UI.BAGI_HASIL}</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '17px', marginTop: '4px' }}>
             {UI.BAGI_HASIL_DESC}
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px', margin: '16px 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '18px', margin: '16px 0' }}>
           <div style={{ display: 'flex', justifySelf: 'space-between', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
             <span style={{ color: 'var(--text-secondary)' }}>{UI.ANGGOTA}:</span>
             <span style={{ fontWeight: '600' }}>{memberCount} orang</span>
@@ -55,10 +55,10 @@ export default function BagiHasil() {
           </div>
 
           {/* Distribution slider */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '12px 0' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', margin: '12px 0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: '700' }}>{UI.PERSEN_BAGI_HASIL}:</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <input 
                   type="range" 
                   min="0" 
@@ -73,9 +73,9 @@ export default function BagiHasil() {
           </div>
 
           {/* Breakdown calculation */}
-          <div className="glass-card" style={{ padding: '12px', margin: '8px 0' }}>
-            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '8px' }}>Preview Pembayaran</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
+          <div className="glass-card" style={{ padding: '16px', margin: '8px 0' }}>
+            <h4 style={{ fontSize: '14px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '8px' }}>Preview Pembayaran</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '17px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>{UI.PER_ANGGOTA}</span>
                 <span style={{ fontWeight: '600' }}>{formatRupiah(perMemberPayout)}</span>
@@ -88,7 +88,7 @@ export default function BagiHasil() {
           </div>
 
           {/* Happiness effect */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '13px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '17px' }}>
             <span>{UI.EFEK_KEBAHAGIAAN}:</span>
             <span style={{ fontWeight: '700', color: happinessEffectColor }}>{happinessEffectText}</span>
           </div>
@@ -96,7 +96,7 @@ export default function BagiHasil() {
 
         <button 
           className="btn btn-primary" 
-          style={{ width: '100%', padding: '12px', marginTop: '16px' }} 
+          style={{ width: '100%', padding: '16px', marginTop: '16px' }} 
           onClick={handleConfirm}
           disabled={money < totalCost}
         >

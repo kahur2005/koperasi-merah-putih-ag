@@ -96,20 +96,15 @@ export default function AdvisoryMemo() {
   }
 
   return (
-    <aside className="advisory-memo" aria-label="Catatan pengurus">
-      <div>
-        <span className="memo-kicker">Catatan Pengurus - Bab {activeChapter.number}</span>
-        <h2>{memo.title}</h2>
-        <p>{memo.body}</p>
-      </div>
-      <div className="memo-targets" aria-label="Target akhir tahun">
-        <span>Kas {formatRupiah(money)} / {formatRupiah(targetMoney)}</span>
-        <span>Anggota {memberCount}/{targetMembers}</span>
-        <span>Bahagia {happiness}%/{targetHappiness}%</span>
-      </div>
-      <button className="btn btn-secondary" onClick={memo.onAction}>
-        {memo.action}
-      </button>
-    </aside>
+    <div className="prabowo-advisor-container" aria-label="Catatan pengurus">
+      <img src="/assets/images/ui/prabowo_bg2.png" alt="Presiden Prabowo" className="prabowo-advisor-portrait" />
+      <aside className="advisory-memo">
+        <h3 className="advisory-title">{memo.title}</h3>
+        <p className="advisory-body">{memo.body}</p>
+        <button className="btn btn-primary" onClick={memo.onAction}>
+          {memo.action}
+        </button>
+      </aside>
+    </div>
   );
 }

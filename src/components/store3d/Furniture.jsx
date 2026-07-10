@@ -245,11 +245,12 @@ const IndoorPlant = ({ isSelected, customColor, isGhost }) => {
   );
 };
 
-const PictureFrame = ({ isSelected, customColor, isGhost }) => {
+const PictureFrame = ({ type, isSelected, customColor, isGhost }) => {
   const frameColor = customColor || '#D97706';
   const frameMaterial = <meshStandardMaterial color={frameColor} roughness={0.3} metalness={0.6} emissive={isSelected ? '#3B82F6' : '#000000'} emissiveIntensity={isSelected ? 0.3 : 0} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
-  const prabowoTexture = useLoader(TextureLoader, '/assets/images/prabowo.jpg');
-  const photoMaterial = <meshStandardMaterial map={prabowoTexture} roughness={0.8} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
+  const texturePath = type === 'gibranPicture' ? '/assets/images/gibran.jpg' : '/assets/images/prabowo.jpg';
+  const texture = useLoader(TextureLoader, texturePath);
+  const photoMaterial = <meshStandardMaterial map={texture} roughness={0.8} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
   return (
     <group>
       <mesh position={[0, 0, 0]}>
@@ -269,7 +270,7 @@ export default function Furniture({ id, type, x, y, rotation = 0, color, isSelec
   const posZ = (y - 50) / 10;
   let posY = 0;
 
-  if (type === 'prabowoPicture') {
+  if (type === 'prabowoPicture' || type === 'gibranPicture') {
     posY = 2.5; 
   }
 
@@ -282,7 +283,8 @@ export default function Furniture({ id, type, x, y, rotation = 0, color, isSelec
       case 'cashier': return <CashierDesk isSelected={isSelected} customColor={color} isGhost={isGhost} />;
       case 'carpet': return <Carpet isSelected={isSelected} customColor={color} isGhost={isGhost} />;
       case 'indoorPlant': return <IndoorPlant isSelected={isSelected} customColor={color} isGhost={isGhost} />;
-      case 'prabowoPicture': return <PictureFrame isSelected={isSelected} customColor={color} isGhost={isGhost} />;
+      case 'prabowoPicture': return <PictureFrame type="prabowoPicture" isSelected={isSelected} customColor={color} isGhost={isGhost} />;
+      case 'gibranPicture': return <PictureFrame type="gibranPicture" isSelected={isSelected} customColor={color} isGhost={isGhost} />;
       default:
         return (
           <mesh castShadow={!isGhost} receiveShadow={!isGhost}>

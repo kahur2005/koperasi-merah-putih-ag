@@ -47,6 +47,7 @@ export const FURNITURE = {
   carpet:         { price: 700_000,  happinessBonus: 5,                     maxCount: 3, label: 'Karpet' },
   indoorPlant:    { price: 850_000,  happinessBonus: 5,                     maxCount: 3, label: 'Tanaman Hias' },
   prabowoPicture: { price: 600_000,  happinessBonus: 10,                    maxCount: 3, label: 'Foto Prabowo' },
+  gibranPicture:  { price: 500_000,  happinessBonus: 10,                    maxCount: 1, label: 'Foto Wapres Gibran' },
 };
 
 export const STORE = {

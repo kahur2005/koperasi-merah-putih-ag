@@ -26,22 +26,22 @@ export default function LaporanHarian() {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content glass-card" style={{ maxWidth: '440px', padding: '24px' }}>
+      <div className="modal-content glass-card" style={{ maxWidth: '440px', padding: '31px' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '800', letterSpacing: '0.5px' }}>📋 {UI.LAPORAN_HARIAN}</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '4px' }}>
+          <h2 style={{ fontSize: '31px', fontWeight: '800', letterSpacing: '0.5px' }}>📋 {UI.LAPORAN_HARIAN}</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '17px', marginTop: '4px' }}>
             {UI.HARI} {dayReport.dayNumber} &bull; {indonesianDateStr}
           </p>
         </div>
 
         <div style={{ borderTop: '2px dashed var(--border)', borderBottom: '2px dashed var(--border)', padding: '16px 0', margin: '16px 0' }}>
-          <h3 style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px' }}>
             {UI.BARANG_TERJUAL}:
           </h3>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
             {/* Rice */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px' }}>
               <span>🍚 {UI.BERAS}</span>
               <span style={{ fontWeight: '600' }}>
                 {dayReport.salesBreakdown.rice.sold} &times; {formatRupiah(sellingPrices.rice)} = {formatRupiah(dayReport.salesBreakdown.rice.revenue)}
@@ -49,7 +49,7 @@ export default function LaporanHarian() {
             </div>
 
             {/* Oil */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px' }}>
               <span>🛢 {UI.MINYAK_GORENG}</span>
               <span style={{ fontWeight: '600' }}>
                 {dayReport.salesBreakdown.cookingOil.sold} &times; {formatRupiah(sellingPrices.cookingOil)} = {formatRupiah(dayReport.salesBreakdown.cookingOil.revenue)}
@@ -57,7 +57,7 @@ export default function LaporanHarian() {
             </div>
 
             {/* Gas */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px' }}>
               <span>⛽ {UI.GAS_LPG}</span>
               <span style={{ fontWeight: '600' }}>
                 {dayReport.salesBreakdown.lpgGas.sold} &times; {formatRupiah(sellingPrices.lpgGas)} = {formatRupiah(dayReport.salesBreakdown.lpgGas.revenue)}
@@ -67,7 +67,7 @@ export default function LaporanHarian() {
         </div>
 
         {/* Stats breakdown */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', margin: '16px 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '17px', margin: '16px 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span style={{ color: 'var(--text-secondary)' }}>{UI.PELANGGAN_DILAYANI}:</span>
             <span style={{ fontWeight: '600' }}>{itemsSold} / {totalCustomers}</span>
@@ -81,19 +81,19 @@ export default function LaporanHarian() {
         </div>
 
         {/* Totals */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--border)', paddingTop: '16px', margin: '16px 0 24px 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid var(--border)', paddingTop: '16px', margin: '16px 0 24px 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontWeight: '700', fontSize: '15px' }}>{UI.TOTAL_PENDAPATAN}:</span>
-            <span style={{ fontWeight: '800', fontSize: '18px', color: 'var(--accent-green)' }}>
+            <span style={{ fontWeight: '700', fontSize: '20px' }}>{UI.TOTAL_PENDAPATAN}:</span>
+            <span style={{ fontWeight: '800', fontSize: '23px', color: 'var(--accent-green)' }}>
               {formatRupiah(dayReport.revenue)}
             </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontWeight: '700', fontSize: '14px' }}>{UI.PERUBAHAN_KEBAHAGIAAN}:</span>
+            <span style={{ fontWeight: '700', fontSize: '18px' }}>{UI.PERUBAHAN_KEBAHAGIAAN}:</span>
             <span 
               style={{ 
                 fontWeight: '800', 
-                fontSize: '15px', 
+                fontSize: '20px', 
                 color: dayReport.happinessChange >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' 
               }}
             >
@@ -102,7 +102,7 @@ export default function LaporanHarian() {
           </div>
         </div>
 
-        <button className="btn btn-primary btn-endday" style={{ width: '100%', padding: '12px' }} onClick={handleNextDay}>
+        <button className="btn btn-primary btn-endday" style={{ width: '100%', padding: '16px' }} onClick={handleNextDay}>
           {UI.BTN_LANJUT}
         </button>
       </div>

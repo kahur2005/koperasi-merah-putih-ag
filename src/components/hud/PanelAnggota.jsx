@@ -37,19 +37,19 @@ export default function PanelAnggota() {
           <button className="modal-close" onClick={handleClose}>&times;</button>
         </div>
 
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', margin: '16px 0' }}>
+        <div style={{ display: 'flex', gap: '26px', alignItems: 'center', margin: '16px 0' }}>
           <img 
             src={selectedNpc.avatar} 
             alt={personName} 
             style={{ width: '96px', height: '96px', borderRadius: '0', objectFit: 'cover', border: '3px solid var(--wood-dark)' }}
           />
           <div>
-            <h3 style={{ fontSize: '20px', marginBottom: '4px' }}>{personName}</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>{selectedNpc.pekerjaan}</p>
+            <h3 style={{ fontSize: '26px', marginBottom: '4px' }}>{personName}</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '18px' }}>{selectedNpc.pekerjaan}</p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', margin: '16px 0', fontSize: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '13px', margin: '16px 0', fontSize: '18px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
             <span style={{ color: 'var(--text-secondary)' }}>{UI.UMUR}</span>
             <span style={{ fontWeight: '600' }}>{selectedNpc.umur} {UI.TAHUN}</span>
@@ -68,7 +68,7 @@ export default function PanelAnggota() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+        <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
           <button className="btn btn-secondary" style={{ flex: 1 }} onClick={handleDeny}>
             {UI.BTN_TOLAK}
           </button>

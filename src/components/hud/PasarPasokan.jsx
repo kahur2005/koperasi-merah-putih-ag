@@ -146,14 +146,14 @@ export default function PasarPasokan() {
                       value={qty || ''}
                       onChange={(e) => handleQtyChange(item.key, e.target.value)}
                       className="form-input"
-                      style={{ padding: '6px', textAlign: 'center' }}
+                      style={{ padding: '8px', textAlign: 'center' }}
                       placeholder="0"
                     />
                   </td>
                   <td>
                     <button 
                       className="btn btn-primary btn-success" 
-                      style={{ padding: '6px 12px', fontSize: '12px' }}
+                      style={{ padding: '6px 12px', fontSize: '16px' }}
                       disabled={qty <= 0 || qty > avail}
                       onClick={() => handleBuy(item.key)}
                     >
