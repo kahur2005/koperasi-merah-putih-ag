@@ -23,7 +23,7 @@ export default function StoreScene() {
   const updatePlacement = useGameStore((s) => s.updatePlacement);
 
   const [selectedId, setSelectedId] = useState(null);
-  const [ghostPos, setGhostPos] = useState({ x: 50, y: 50 });
+  const [ghostPlacement, setGhostPlacement] = useState({ x: 50, y: 50, rot: 0 });
 
   const handleFurnitureClick = (id) => {
     if (placementMode) return;
@@ -79,13 +79,12 @@ export default function StoreScene() {
     }, storeSize, type);
   };
 
-  const confirmPlacementAtPoint = (point) => {
+  const confirmGhostPlacement = () => {
     if (!placementMode) return;
-    const snapped = getSnappedPosition(point, placementMode.type);
-    if (isWallFurniture(placementMode.type) && placementMode.rotation !== snapped.rot) {
-      updatePlacement({ rotation: snapped.rot });
+    if (isWallFurniture(placementMode.type) && placementMode.rotation !== ghostPlacement.rot) {
+      updatePlacement({ rotation: ghostPlacement.rot });
     }
-    confirmPlacement(snapped.x, snapped.y);
+    confirmPlacement(ghostPlacement.x, ghostPlacement.y);
   };
 
   const moveSelectedToPoint = (point) => {
@@ -99,7 +98,7 @@ export default function StoreScene() {
   const handleFloorPointerMove = (e) => {
     if (!placementMode) return;
     const snapped = getSnappedPosition(e.point);
-    setGhostPos({ x: snapped.x, y: snapped.y });
+    setGhostPlacement({ x: snapped.x, y: snapped.y, rot: snapped.rot || 0 });
     if (isWallFurniture(placementMode.type) && placementMode.rotation !== snapped.rot) {
       updatePlacement({ rotation: snapped.rot });
     }
@@ -108,7 +107,7 @@ export default function StoreScene() {
   const handleFloorClick = (e) => {
     e.stopPropagation();
     if (placementMode) {
-      confirmPlacementAtPoint(e.point);
+      confirmGhostPlacement();
       return;
     }
     if (selectedId) {
@@ -121,7 +120,7 @@ export default function StoreScene() {
   const handleFloorDoubleClick = (e) => {
     if (placementMode) {
       e.stopPropagation();
-      confirmPlacementAtPoint(e.point);
+      confirmGhostPlacement();
     }
   };
 
@@ -227,9 +226,9 @@ export default function StoreScene() {
             <Furniture 
               id="ghost"
               type={placementMode.type}
-              x={ghostPos.x}
-              y={ghostPos.y}
-              rotation={placementMode.rotation}
+              x={ghostPlacement.x}
+              y={ghostPlacement.y}
+              rotation={isWallFurniture(placementMode.type) ? ghostPlacement.rot : placementMode.rotation}
               color={placementMode.color}
               isGhost={true}
               onClick={() => {}}
