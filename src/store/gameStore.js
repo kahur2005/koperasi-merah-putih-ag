@@ -24,6 +24,11 @@ let _uid = 0;
 const uid = () => `${Date.now()}-${++_uid}`;
 
 const displayName = (person) => person?.nama || person?.name || person?.memberName || person?.namaAnggota || 'Warga Desa';
+const ITEM_LABELS = {
+  rice: 'beras',
+  cookingOil: 'minyak goreng',
+  lpgGas: 'gas LPG',
+};
 
 const storyMomentPatch = (state, id, moment) => {
   if (state.storyFlags[id]) return {};
@@ -86,6 +91,9 @@ const createInitialState = () => ({
   storeSize: 'small',
   furniturePositions: [],
   placementMode: null, // { type, rotation, color, price }
+  managerSession: null,
+  monthlyPaymentPreset: 'normal',
+  loanCapacityMultiplier: 1,
 
   // Loans
   activeLoans: [],
@@ -171,18 +179,30 @@ export const useGameStore = create((set, get) => ({
     set((state) => {
       const pendingMoments = state.pendingMorningStoryMoments || [];
       const [firstMoment, ...remainingMoments] = pendingMoments;
+      const managerPrompt = createStoryMoment(`manager_prompt_${state.dayNumber}`, {
+        speaker: 'Bu Siti',
+        title: 'Pilih cara membuka toko',
+        text: state.dayNumber <= 2
+          ? 'Setelah restok, coba masuk ke toko 3D dan layani warga langsung sebagai pengelola. Kalau ingin cepat, hari berikutnya kamu juga bisa memakai simulasi.'
+          : 'Pasokan sudah siap. Kamu bisa masuk ke toko 3D untuk melayani warga langsung, atau memakai simulasi harian dari layar utama.',
+        avatar: '/assets/avatars/female_1_siti.jpg',
+        actionLabel: 'Masuk Toko 3D',
+        actionView: 'store3d',
+      });
+      const queuedMoments = [...(firstMoment ? pendingMoments : []), managerPrompt];
+      const [nextMoment, ...remainingQueuedMoments] = queuedMoments;
 
       return {
-        gamePhase: 'storeOpen',
+        gamePhase: 'readyToOpen',
         activeModal: null,
         restockFocusItem: null,
         pendingMorningStoryMoments: [],
-        ...(firstMoment
+        ...(nextMoment
           ? {
-              currentStoryMoment: state.currentStoryMoment || firstMoment,
+              currentStoryMoment: state.currentStoryMoment || nextMoment,
               storyQueue: state.currentStoryMoment
-                ? [...state.storyQueue, ...pendingMoments]
-                : [...state.storyQueue, ...remainingMoments],
+                ? [...state.storyQueue, ...queuedMoments]
+                : [...state.storyQueue, ...remainingQueuedMoments],
             }
           : {}),
       };
@@ -192,10 +212,12 @@ export const useGameStore = create((set, get) => ({
   completeStoryIntro: () =>
     set((state) => ({
       storyIntroSeen: true,
+      gamePhase: 'setupStore',
+      currentView: 'store3d',
       ...storyMomentPatch(state, 'welcome_mission', {
         speaker: 'Bu Siti',
-        title: 'Buku kerja sudah siap',
-        text: 'Mulai dari toko kecil dulu. Pasang kasir, beli stok, lalu akhiri hari untuk melihat dampaknya pada warga.',
+        title: 'Susun toko pertama',
+        text: 'Mulai dari toko kecil dulu. Masuk ke koperasi 3D, pasang minimal satu kasir dan satu rak agar warga bisa dilayani.',
         avatar: '/assets/avatars/female_1_siti.jpg',
         actionLabel: 'Masuk Toko',
         actionView: 'store3d',
@@ -321,6 +343,7 @@ export const useGameStore = create((set, get) => ({
     set((state) => {
       const loanReq = state.pendingLoanRequests.find((l) => l.id === loanId);
       if (!loanReq) return {};
+      if (!Number.isFinite(loanReq.jumlahPinjaman) || loanReq.jumlahPinjaman <= 0) return {};
       if (state.money < loanReq.jumlahPinjaman) return {}; // Saldo tidak cukup
 
       // Interest is fixed at 6% p.a., tenor is 1 month. Total repayment = Pokok + (Pokok * 0.005)
@@ -510,9 +533,132 @@ export const useGameStore = create((set, get) => ({
 
   /** 12. setSellingPrice */
   setSellingPrice: (item, price) =>
-    set((state) => ({
-      sellingPrices: { ...state.sellingPrices, [item]: price },
-    })),
+    set((state) => {
+      if (!state.sellingPrices[item] && state.sellingPrices[item] !== 0) return {};
+      if (!Number.isFinite(price) || price < 0) return {};
+
+      return {
+        sellingPrices: { ...state.sellingPrices, [item]: price },
+      };
+    }),
+
+  /** 12b. startSalesSimulation */
+  startSalesSimulation: () => {
+    const state = get();
+    if (state.gamePhase !== 'readyToOpen' && state.gamePhase !== 'storeOpen') return;
+    if (!isStoreReadyToOpen(state)) {
+      set({
+        notifications: [
+          ...state.notifications,
+          { id: uid(), text: 'Pasang kasir, rak, dan isi stok sebelum membuka toko.' },
+        ],
+      });
+      return;
+    }
+    set({ gamePhase: 'storeOpen', activeModal: null, currentView: 'dashboard' });
+    get().endDay();
+  },
+
+  /** 12c. startManagerMode */
+  startManagerMode: () =>
+    set((state) => {
+      if (state.gamePhase !== 'readyToOpen') return {};
+      if (!isStoreReadyToOpen(state)) {
+        return {
+          notifications: [
+            ...state.notifications,
+            { id: uid(), text: 'Pasang kasir, rak, dan isi stok sebelum membuka toko.' },
+          ],
+        };
+      }
+
+      const cashierCount = Math.max(1, state.furniture.cashier || 0);
+      const totalCustomers = randomInt(5 * cashierCount, 10 * cashierCount);
+      const availableItems = Object.keys(state.stock).filter((item) => state.stock[item] > 0);
+      const customerQueue = Array.from({ length: totalCustomers }, (_, index) => ({
+        id: `customer-${state.dayNumber}-${index + 1}`,
+        item: pickRandom(availableItems),
+      }));
+
+      return {
+        gamePhase: 'managerMode',
+        currentView: 'store3d',
+        activeModal: null,
+        currentStoryMoment: null,
+        storyQueue: state.storyQueue,
+        managerSession: {
+          startedAt: Date.now(),
+          durationSeconds: 60,
+          totalCustomers,
+          customerQueue,
+          currentIndex: 0,
+          served: 0,
+          wrong: 0,
+          missed: 0,
+          revenue: 0,
+          feedback: '',
+          salesBreakdown: createEmptySalesBreakdown(),
+          applicantsGenerated: 0,
+        },
+      };
+    }),
+
+  /** 12d. serveManagerCustomer */
+  serveManagerCustomer: (item) =>
+    set((state) => {
+      if (state.gamePhase !== 'managerMode' || !state.managerSession) return {};
+
+      const session = state.managerSession;
+      const request = session.customerQueue[session.currentIndex];
+      if (!request) return {};
+
+      if (item !== request.item) {
+        return {
+          managerSession: {
+            ...session,
+            wrong: session.wrong + 1,
+            feedback: `Bukan itu. Warga meminta ${ITEM_LABELS[request.item] || request.item}.`,
+          },
+        };
+      }
+
+      if ((state.stock[item] || 0) <= 0) {
+        return {
+          managerSession: {
+            ...session,
+            currentIndex: session.currentIndex + 1,
+            missed: session.missed + 1,
+            feedback: `${ITEM_LABELS[item] || item} habis. Warga pergi kecewa.`,
+          },
+        };
+      }
+
+      const price = state.sellingPrices[item] || 0;
+      const salesBreakdown = {
+        ...(session.salesBreakdown || createEmptySalesBreakdown()),
+        [item]: {
+          sold: ((session.salesBreakdown?.[item]?.sold) || 0) + 1,
+          revenue: ((session.salesBreakdown?.[item]?.revenue) || 0) + price,
+        },
+      };
+
+      return {
+        stock: { ...state.stock, [item]: state.stock[item] - 1 },
+        money: state.money + price,
+        managerSession: {
+          ...session,
+          currentIndex: session.currentIndex + 1,
+          served: session.served + 1,
+          revenue: session.revenue + price,
+          salesBreakdown,
+          feedback: `Benar. ${ITEM_LABELS[item] || item} terjual.`,
+        },
+      };
+    }),
+
+  /** 12e. finishManagerMode */
+  finishManagerMode: () =>
+    set((state) => finishManagerDay(state)),
 
   // ╔═══════════════════════════════════════════════════════════════════════════╗
   // ║  13-14 — Store & Furniture                                              ║
@@ -587,6 +733,7 @@ export const useGameStore = create((set, get) => ({
           color,
         },
       ];
+      const setupComplete = state.gamePhase === 'setupStore' && isStoreSetupComplete(newFurniture);
 
       return {
         money: state.money - price,
@@ -595,14 +742,28 @@ export const useGameStore = create((set, get) => ({
         happiness: newHappiness,
         furniturePositions: newPositions,
         placementMode: null,
+        ...(setupComplete
+          ? {
+              gamePhase: 'restockPhase',
+              currentView: 'dashboard',
+              activeModal: 'pasar',
+            }
+          : {}),
         notifications: [
           ...state.notifications,
-          { id: uid(), text: `Membeli ${def.label || def.name || type} untuk toko!` },
+          {
+            id: uid(),
+            text: setupComplete
+              ? 'Toko siap. Buka Pasar untuk mengisi stok pertama.'
+              : `Membeli ${def.label || def.name || type} untuk toko!`,
+          },
         ],
-        ...storyMomentPatch(state, `furniture_${type}`, {
+        ...storyMomentPatch(state, setupComplete ? 'setup_store_complete' : `furniture_${type}`, {
           speaker: 'Bu Siti',
-          title: type === 'cashier' ? 'Kasir siap melayani' : 'Toko makin lengkap',
-          text: type === 'cashier'
+          title: setupComplete ? 'Toko siap diisi stok' : (type === 'cashier' ? 'Kasir siap melayani' : 'Toko makin lengkap'),
+          text: setupComplete
+            ? 'Kasir dan rak sudah terpasang. Sekarang kembali ke layar utama dan buka Pasar untuk restok sebelum toko dibuka.'
+            : type === 'cashier'
             ? 'Dengan kasir, warga bisa mulai berbelanja setiap hari. Sekarang stok dan harga jadi keputusan penting.'
             : `${def.label || 'Furnitur baru'} membantu koperasi melayani lebih rapi dan nyaman.`,
           avatar: '/assets/avatars/female_1_siti.jpg',
@@ -654,6 +815,7 @@ export const useGameStore = create((set, get) => ({
   /** 15. endDay */
   endDay: () =>
     set((state) => {
+      if (state.gamePhase !== 'storeOpen') return {};
       // ── a. Calculate total customers ──
       const totalCustomers =
         state.furniture.cashier * (STORE.BASE_CUSTOMERS_PER_CASHIER || 10);
@@ -748,6 +910,7 @@ export const useGameStore = create((set, get) => ({
 
       // ── k. Create day report ──
       const dayReport = {
+        playMode: 'simulation',
         dayNumber: state.dayNumber,
         date: state.currentDate,
         totalCustomers,
@@ -763,6 +926,11 @@ export const useGameStore = create((set, get) => ({
           state.gagalPanenDay === state.dayNumber && !state.boughtFromUMKMToday,
         krisisActive: state.krisisDaysRemaining > 0,
       };
+
+      const memberApplicationPatch = generateCustomerApplications(
+        state,
+        Math.floor(totalItemsSoldToday / 3)
+      );
 
       // ── l-m. Determine which modal to show ──
       const nextDate = dayjs(state.currentDate).add(1, 'day');
@@ -814,6 +982,7 @@ export const useGameStore = create((set, get) => ({
           ...state.statistics,
           totalItemsSold: state.statistics.totalItemsSold + totalItemsSoldToday,
         },
+        ...memberApplicationPatch,
         ...(dayReport.gagalPanenTriggered
           ? storyMomentPatch(state, `harvest_missed_${state.dayNumber}`, {
               speaker: 'Pak Budi',
@@ -865,27 +1034,8 @@ export const useGameStore = create((set, get) => ({
         newSupplierPricesUMKM[item] = effectiveBase + randomInt(-variance, variance);
       });
 
-      // ── c. Generate member applications ──
-      const existingMemberIds = new Set(state.members.map((m) => m.id));
-      const pendingIds = new Set(state.pendingApplications.map((a) => a.id));
-      const eligibleNPCs = NPC_DATABASE.filter(
-        (npc) => !existingMemberIds.has(npc.id) && !pendingIds.has(npc.id)
-      );
-      const numApplications = Math.min(randomInt(1, 5), eligibleNPCs.length);
-      const shuffled = shuffleArray([...eligibleNPCs]);
-      const newApplicants = shuffled.slice(0, numApplications);
-      const newPendingApplications = [
-        ...state.pendingApplications,
-        ...newApplicants,
-      ];
-      if (newApplicants.length > 0) {
-        morningStoryEvents.push({
-          type: 'memberApplication',
-          dayNumber: state.dayNumber,
-          applicant: newApplicants[0],
-          totalApplicants: newApplicants.length,
-        });
-      }
+      // ── c. Member applications now come from served customers, not morning auto-spawns ──
+      const newPendingApplications = [...state.pendingApplications];
 
       // ── d. Check loanSchedule for today's loan requests ──
       let newPendingLoanRequests = [...state.pendingLoanRequests];
@@ -956,6 +1106,15 @@ export const useGameStore = create((set, get) => ({
       let monthlyNotifications = [];
 
       if (isFirstOfMonth && state.memberCount > 0) {
+        morningStoryEvents.push({
+          type: 'monthlyMeeting',
+          dayNumber: state.dayNumber,
+        });
+      }
+
+      if (isFirstOfMonth && state.memberCount > 0 && state.gamePhase !== 'monthlyMeeting') {
+        // Monthly savings are now decided by the player in the monthly meeting.
+      } else if (isFirstOfMonth && state.memberCount > 0) {
         // Collect savings: money += memberCount * MEMBERS.MONTHLY_SAVING
         const savings = state.memberCount * (MEMBERS.MONTHLY_SAVING || 50000);
         money += savings;
@@ -1207,8 +1366,8 @@ export const useGameStore = create((set, get) => ({
         activeEvents: newActiveEvents,
         eventLog: newEventLog,
         boughtFromUMKMToday: resetBoughtFromUMKM,
-        activeModal: gameOver ? 'gameOver' : 'pasar',
-        gamePhase: gameOver ? state.gamePhase : 'restockPhase',
+        activeModal: gameOver ? 'gameOver' : (isFirstOfMonth && state.memberCount > 0 ? 'monthlyMeeting' : 'pasar'),
+        gamePhase: gameOver ? state.gamePhase : (isFirstOfMonth && state.memberCount > 0 ? 'monthlyMeeting' : 'restockPhase'),
         restockFocusItem: null,
         pendingMorningStoryMoments,
         happiness: newHappiness,
@@ -1219,7 +1378,65 @@ export const useGameStore = create((set, get) => ({
           ...state.notifications,
           ...monthlyNotifications,
         ],
-        ...storyPatch,
+        ...(isFirstOfMonth && state.memberCount > 0
+          ? storyMomentPatch(state, `monthly_meeting_${state.dayNumber}`, {
+              speaker: 'Bu Siti',
+              title: 'Rapat simpanan bulanan',
+              text: 'Anggota berkumpul untuk menentukan simpanan wajib bulan ini. Pilihanmu memengaruhi kas koperasi, ruang pinjaman, dan kebahagiaan anggota.',
+              avatar: '/assets/avatars/female_1_siti.jpg',
+              actionLabel: 'Mulai Rapat',
+              actionModal: 'monthlyMeeting',
+            })
+          : storyPatch),
+      };
+    }),
+
+  /** 16b. chooseMonthlyPayment */
+  chooseMonthlyPayment: (preset) =>
+    set((state) => {
+      if (state.gamePhase !== 'monthlyMeeting') return {};
+      const options = {
+        low: { amount: 25_000, happinessDelta: 5, loanCapacityMultiplier: 0.6, leaveChance: 0 },
+        normal: { amount: MEMBERS.MONTHLY_SAVING || 50_000, happinessDelta: 0, loanCapacityMultiplier: 1, leaveChance: 0 },
+        high: { amount: 100_000, happinessDelta: -10, loanCapacityMultiplier: 1.5, leaveChance: 0.25 },
+      };
+      const choice = options[preset] || options.normal;
+      const contribution = choice.amount * state.memberCount;
+      const remainingMembers = choice.leaveChance > 0
+        ? state.members.filter(() => seededRandom() >= choice.leaveChance)
+        : state.members;
+      const leftCount = state.members.length - remainingMembers.length;
+
+      return {
+        money: state.money + contribution,
+        happiness: clamp(state.happiness + choice.happinessDelta),
+        members: remainingMembers,
+        memberCount: remainingMembers.length,
+        monthlyPaymentPreset: preset,
+        loanCapacityMultiplier: choice.loanCapacityMultiplier,
+        activeModal: 'pasar',
+        gamePhase: 'restockPhase',
+        notifications: [
+          ...state.notifications,
+          {
+            id: uid(),
+            text: leftCount > 0
+              ? `${leftCount} anggota keluar karena simpanan wajib terlalu tinggi.`
+              : `Simpanan bulanan terkumpul: Rp ${contribution.toLocaleString('id-ID')}.`,
+          },
+        ],
+        ...storyMomentPatch(state, `monthly_payment_${state.dayNumber}_${preset}`, {
+          speaker: 'Bu Siti',
+          title: 'Keputusan rapat dicatat',
+          text: preset === 'high'
+            ? 'Kas bertambah besar, tetapi anggota akan lebih sensitif terhadap keputusan koperasi berikutnya.'
+            : preset === 'low'
+              ? 'Anggota merasa ringan, tetapi ruang koperasi untuk memberi pinjaman bulan ini lebih terbatas.'
+              : 'Simpanan bulanan berjalan seimbang. Anggota menerima keputusan rapat tanpa gejolak.',
+          avatar: '/assets/avatars/female_1_siti.jpg',
+          actionLabel: 'Lanjut Restok',
+          actionModal: 'pasar',
+        }),
       };
     }),
 
@@ -1230,6 +1447,7 @@ export const useGameStore = create((set, get) => ({
   /** 17. processBagiHasil */
   processBagiHasil: (percent) =>
     set((state) => {
+      if (!Number.isFinite(percent)) return {};
       const monthlySaving = MEMBERS.MONTHLY_SAVING || 50000;
       const cost = Math.round((percent / 100) * monthlySaving * state.memberCount);
 
@@ -1371,6 +1589,112 @@ function recalcStockCapacity(furniture) {
   });
 
   return capacity;
+}
+
+function createEmptySalesBreakdown() {
+  return {
+    rice: { sold: 0, revenue: 0 },
+    cookingOil: { sold: 0, revenue: 0 },
+    lpgGas: { sold: 0, revenue: 0 },
+  };
+}
+
+function isStoreReadyToOpen(state) {
+  const hasStock = Object.values(state.stock || {}).some((qty) => qty > 0);
+  return isStoreSetupComplete(state.furniture) && hasStock;
+}
+
+function isStoreSetupComplete(furniture) {
+  const hasCashier = (furniture.cashier || 0) > 0;
+  const hasCapacityFurniture = Object.entries(furniture).some(([type, count]) =>
+    count > 0 && !!FURNITURE[type]?.stockBonus
+  );
+  return hasCashier && hasCapacityFurniture;
+}
+
+function generateCustomerApplications(state, count) {
+  if (count <= 0) return {};
+
+  const existingIds = new Set(state.members.map((member) => member.id));
+  const pendingIds = new Set(state.pendingApplications.map((applicant) => applicant.id));
+  const availableApplicants = NPC_DATABASE.filter(
+    (npc) => !existingIds.has(npc.id) && !pendingIds.has(npc.id)
+  );
+  const newApplicants = shuffleArray([...availableApplicants]).slice(0, count);
+  if (newApplicants.length === 0) return {};
+
+  return {
+    pendingApplications: [...state.pendingApplications, ...newApplicants],
+    notifications: [
+      ...state.notifications,
+      {
+        id: uid(),
+        text: `${newApplicants.length} pelanggan tertarik menjadi anggota koperasi.`,
+      },
+    ],
+    ...storyMomentPatch(state, `customer_applicants_${state.dayNumber}`, {
+      speaker: 'Bu Siti',
+      title: 'Pelanggan tertarik bergabung',
+      text: `${newApplicants.length} pelanggan hari ini ingin dipertimbangkan sebagai anggota. Periksa daftar calon anggota setelah laporan harian selesai.`,
+      avatar: '/assets/avatars/female_1_siti.jpg',
+    }),
+  };
+}
+
+function finishManagerDay(state) {
+  if (state.gamePhase !== 'managerMode' || !state.managerSession) return {};
+
+  const session = state.managerSession;
+  const unresolved = Math.max(0, session.totalCustomers - session.currentIndex);
+  const totalMissed = session.missed + unresolved;
+  const happinessDelta = -0.5 * totalMissed;
+  const newHappiness = clamp(state.happiness + happinessDelta);
+  const nextDate = dayjs(state.currentDate).add(1, 'day');
+  const isEndOfMonth = dayjs(state.currentDate).endOf('month').isSame(state.currentDate, 'day');
+  const newDayNumber = state.dayNumber + 1;
+  const newDate = nextDate.format('YYYY-MM-DD');
+  const salesBreakdown = session.salesBreakdown || createEmptySalesBreakdown();
+  const dayReport = {
+    playMode: 'manager',
+    dayNumber: state.dayNumber,
+    date: state.currentDate,
+    totalCustomers: session.totalCustomers,
+    totalItemsSold: session.served,
+    revenue: session.revenue,
+    salesBreakdown,
+    happinessChange: happinessDelta,
+    happinessAfter: newHappiness,
+    moneyAfter: state.money,
+    stockAfter: { ...state.stock },
+    eventsActive: [...state.activeEvents],
+    gagalPanenTriggered:
+      state.gagalPanenDay === state.dayNumber && !state.boughtFromUMKMToday,
+    krisisActive: state.krisisDaysRemaining > 0,
+    manager: {
+      served: session.served,
+      wrong: session.wrong,
+      missed: totalMissed,
+    },
+  };
+  const memberApplicationPatch = generateCustomerApplications(
+    state,
+    Math.floor(session.served / 3)
+  );
+
+  return {
+    happiness: newHappiness,
+    dayReport,
+    activeModal: isEndOfMonth ? 'bagiHasil' : 'laporanHarian',
+    gamePhase: 'closingReport',
+    currentDate: newDate,
+    dayNumber: newDayNumber,
+    managerSession: null,
+    statistics: {
+      ...state.statistics,
+      totalItemsSold: state.statistics.totalItemsSold + session.served,
+    },
+    ...memberApplicationPatch,
+  };
 }
 
 /**

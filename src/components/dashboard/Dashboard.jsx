@@ -13,6 +13,7 @@ import PanelKalender from '../hud/PanelKalender';
 import LaporanHarian from '../hud/LaporanHarian';
 import BagiHasil from '../hud/BagiHasil';
 import PanelMuseum from '../hud/PanelMuseum';
+import MonthlyMeeting from '../hud/MonthlyMeeting';
 
 export default function Dashboard() {
   const activeModal = useGameStore((s) => s.activeModal);
@@ -74,6 +75,7 @@ export default function Dashboard() {
       {activeModal === 'kalender' && <PanelKalender />}
       {activeModal === 'laporanHarian' && <LaporanHarian />}
       {activeModal === 'bagiHasil' && <BagiHasil />}
+      {activeModal === 'monthlyMeeting' && <MonthlyMeeting />}
       {activeModal === 'museum' && <PanelMuseum />}
 
       {activeModal === 'gameOver' && gameResult && (

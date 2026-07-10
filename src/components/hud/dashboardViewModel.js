@@ -40,7 +40,35 @@ export function getDashboardAdvisory(state, chapterProgress) {
     actionType: nextGoal?.id === 'money' || nextGoal?.id === 'stock' || nextGoal?.id === 'capacity' ? 'pasar' : 'store3d',
   };
 
-  if (state.gamePhase === 'restockPhase') {
+  if (state.gamePhase === 'setupStore') {
+    advisory = {
+      title: 'Susun toko koperasi',
+      body: 'Masuk ke toko 3D, pasang minimal satu kasir dan satu rak sebelum membeli stok pertama.',
+      action: 'Masuk Toko',
+      actionType: 'store3d',
+    };
+  } else if (state.gamePhase === 'monthlyMeeting') {
+    advisory = {
+      title: 'Rapat simpanan bulanan',
+      body: 'Tentukan simpanan wajib bulan ini sebelum koperasi kembali membuka toko.',
+      action: 'Mulai Rapat',
+      actionType: 'monthlyMeeting',
+    };
+  } else if (state.gamePhase === 'managerMode') {
+    advisory = {
+      title: 'Manager Mode berjalan',
+      body: 'Layani permintaan pelanggan langsung di toko 3D sebelum waktu habis.',
+      action: 'Masuk Toko',
+      actionType: 'store3d',
+    };
+  } else if (state.gamePhase === 'readyToOpen') {
+    advisory = {
+      title: 'Toko siap dibuka',
+      body: 'Pilih Mainkan 3D untuk melayani pelanggan langsung, atau Simulasi Hari untuk menjalankan penjualan otomatis.',
+      action: 'Mainkan 3D',
+      actionType: 'store3d',
+    };
+  } else if (state.gamePhase === 'restockPhase') {
     advisory = {
       title: 'Fase restok pasokan',
       body: 'Toko masih tutup. Isi stok secara manual atau otomatis sebelum membuka hari baru.',
