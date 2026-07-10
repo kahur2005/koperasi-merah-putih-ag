@@ -101,10 +101,10 @@ test('endDay closes the store and startNewDay enters the restock phase', () => {
   assert.equal(useGameStore.getState().gamePhase, 'restockPhase');
 
   useGameStore.getState().openStoreForDay();
-  assert.equal(useGameStore.getState().gamePhase, 'storeOpen');
+  assert.equal(useGameStore.getState().gamePhase, 'readyToOpen');
 });
 
-test('startNewDay shows restock narrative before deferring new applicant cards until the store opens', () => {
+test('startNewDay shows restock narrative without automatic applicant cards', () => {
   setSeed(1);
   resetTo({
     pendingApplications: NPC_DATABASE.slice(1),
@@ -118,35 +118,45 @@ test('startNewDay shows restock narrative before deferring new applicant cards u
   assert.equal(state.currentStoryMoment.actionLabel, undefined);
   assert.equal(state.currentStoryMoment.actionModal, undefined);
   assert.equal(state.storyQueue.length, 0);
-  assert.equal(state.pendingMorningStoryMoments.length, 2);
-  assert.equal(state.pendingMorningStoryMoments[0].title, 'Ada warga ingin bergabung');
-  assert.equal(state.pendingMorningStoryMoments[1].title, 'Calon anggota menunggu');
+  assert.equal(state.pendingMorningStoryMoments.length, 0);
 
   useGameStore.getState().dismissStoryMoment();
   useGameStore.getState().openStoreForDay();
 
   state = useGameStore.getState();
-  assert.equal(state.currentStoryMoment.title, 'Ada warga ingin bergabung');
-  assert.equal(state.storyQueue.length, 1);
-  assert.equal(state.storyQueue[0].title, 'Calon anggota menunggu');
+  assert.equal(state.currentStoryMoment.title, 'Pilih cara membuka toko');
+  assert.equal(state.storyQueue.length, 0);
   assert.equal(state.pendingMorningStoryMoments.length, 0);
 });
 
-test('startNewDay summarizes multiple new applicants into one narrative pair', () => {
+test('served customers create summarized applicant narrative', () => {
   setSeed(1);
-  resetTo();
+  resetTo({
+    gamePhase: 'managerMode',
+    currentDate: '2026-01-02',
+    dayNumber: 2,
+    stock: { rice: 1, cookingOil: 0, lpgGas: 0 },
+    managerSession: {
+      startedAt: 1,
+      durationSeconds: 60,
+      totalCustomers: 6,
+      customerQueue: [],
+      currentIndex: 6,
+      served: 6,
+      wrong: 0,
+      missed: 0,
+      revenue: 96_000,
+      feedback: '',
+      applicantsGenerated: 0,
+    },
+  });
 
-  useGameStore.getState().startNewDay();
+  useGameStore.getState().finishManagerMode();
 
   const state = useGameStore.getState();
-  const applicationCards = state.pendingMorningStoryMoments.filter((moment) =>
-    moment.id.startsWith('application_')
-  );
-  assert.equal(state.pendingApplications.length > 1, true);
-  assert.equal(applicationCards.length, 2);
-  assert.equal(applicationCards[0].title, 'Ada warga ingin bergabung');
-  assert.match(applicationCards[0].text, /warga lain juga menunggu/);
-  assert.equal(applicationCards[1].title, 'Calon anggota menunggu');
+  assert.equal(state.pendingApplications.length, 2);
+  assert.equal(state.currentStoryMoment.title, 'Pelanggan tertarik bergabung');
+  assert.match(state.currentStoryMoment.text, /2 pelanggan/);
 });
 
 test('startNewDay builds narrative cards from every generated morning event', () => {
@@ -174,8 +184,6 @@ test('startNewDay builds narrative cards from every generated morning event', ()
   assert.deepEqual(titles, [
     'Krisis ekonomi dimulai',
     'Pengajuan modal usaha',
-    'Ada warga ingin bergabung',
-    'Calon anggota menunggu',
   ]);
 });
 
@@ -208,4 +216,164 @@ test('moveFurniture keeps furniture inside upgraded store bounds', () => {
   const item = useGameStore.getState().furniturePositions[0];
   assert.equal(item.x, -42);
   assert.equal(item.y, 192);
+});
+
+test('first day cannot start until setup and restock are ready', () => {
+  resetTo({
+    gamePhase: 'setupStore',
+    money: 5_000_000,
+    furniture: { riceRack: 0, oilRack: 0, goodsRack: 0, lpgStack: 0, cashier: 0, carpet: 0, indoorPlant: 0, prabowoPicture: 0 },
+    stock: { rice: 0, cookingOil: 0, lpgGas: 0 },
+    stockCapacity: { rice: 0, cookingOil: 0, lpgGas: 0 },
+  });
+
+  useGameStore.getState().startSalesSimulation();
+  assert.equal(useGameStore.getState().gamePhase, 'setupStore');
+
+  useGameStore.setState({
+    gamePhase: 'readyToOpen',
+    furniture: { riceRack: 1, oilRack: 0, goodsRack: 0, lpgStack: 0, cashier: 1, carpet: 0, indoorPlant: 0, prabowoPicture: 0 },
+    stock: { rice: 5, cookingOil: 0, lpgGas: 0 },
+    stockCapacity: { rice: 30, cookingOil: 20, lpgGas: 20 },
+  });
+
+  useGameStore.getState().startSalesSimulation();
+  assert.equal(useGameStore.getState().gamePhase, 'closingReport');
+  assert.equal(useGameStore.getState().activeModal, 'laporanHarian');
+});
+
+test('openStoreForDay moves from restock to readyToOpen and prompts manager mode', () => {
+  resetTo({
+    gamePhase: 'restockPhase',
+    currentView: 'dashboard',
+    furniture: { riceRack: 1, oilRack: 0, goodsRack: 0, lpgStack: 0, cashier: 1, carpet: 0, indoorPlant: 0, prabowoPicture: 0 },
+    stock: { rice: 5, cookingOil: 0, lpgGas: 0 },
+    stockCapacity: { rice: 30, cookingOil: 20, lpgGas: 20 },
+  });
+
+  useGameStore.getState().openStoreForDay();
+
+  const state = useGameStore.getState();
+  assert.equal(state.gamePhase, 'readyToOpen');
+  assert.equal(state.currentStoryMoment.title, 'Pilih cara membuka toko');
+  assert.equal(state.currentStoryMoment.actionView, 'store3d');
+});
+
+test('startManagerMode creates cashier-scaled customer queue', () => {
+  setSeed(2);
+  resetTo({
+    gamePhase: 'readyToOpen',
+    furniture: { riceRack: 1, oilRack: 0, goodsRack: 0, lpgStack: 0, cashier: 2, carpet: 0, indoorPlant: 0, prabowoPicture: 0 },
+    stock: { rice: 8, cookingOil: 0, lpgGas: 0 },
+    stockCapacity: { rice: 30, cookingOil: 20, lpgGas: 20 },
+  });
+
+  useGameStore.getState().startManagerMode();
+
+  const state = useGameStore.getState();
+  assert.equal(state.gamePhase, 'managerMode');
+  assert.equal(state.currentView, 'store3d');
+  assert.equal(state.managerSession.totalCustomers >= 10, true);
+  assert.equal(state.managerSession.totalCustomers <= 20, true);
+  assert.equal(state.managerSession.customerQueue.length, state.managerSession.totalCustomers);
+});
+
+test('serveManagerCustomer sells correct item and rejects wrong item', () => {
+  resetTo({
+    gamePhase: 'managerMode',
+    money: 100_000,
+    sellingPrices: { rice: 16_000, cookingOil: 29_000, lpgGas: 35_000 },
+    stock: { rice: 2, cookingOil: 2, lpgGas: 0 },
+    managerSession: {
+      startedAt: 1,
+      durationSeconds: 60,
+      totalCustomers: 2,
+      customerQueue: [{ id: 'c1', item: 'rice' }, { id: 'c2', item: 'cookingOil' }],
+      currentIndex: 0,
+      served: 0,
+      wrong: 0,
+      missed: 0,
+      revenue: 0,
+      feedback: '',
+      applicantsGenerated: 0,
+    },
+  });
+
+  useGameStore.getState().serveManagerCustomer('cookingOil');
+  let state = useGameStore.getState();
+  assert.equal(state.stock.rice, 2);
+  assert.equal(state.managerSession.wrong, 1);
+
+  useGameStore.getState().serveManagerCustomer('rice');
+  state = useGameStore.getState();
+  assert.equal(state.stock.rice, 1);
+  assert.equal(state.money, 116_000);
+  assert.equal(state.managerSession.served, 1);
+  assert.equal(state.managerSession.currentIndex, 1);
+});
+
+test('finishManagerMode creates report and customers can become applicants', () => {
+  setSeed(1);
+  resetTo({
+    gamePhase: 'managerMode',
+    currentDate: '2026-01-02',
+    dayNumber: 2,
+    money: 100_000,
+    pendingApplications: [],
+    members: [],
+    stock: { rice: 1, cookingOil: 0, lpgGas: 0 },
+    managerSession: {
+      startedAt: 1,
+      durationSeconds: 60,
+      totalCustomers: 3,
+      customerQueue: [{ id: 'c1', item: 'rice' }, { id: 'c2', item: 'rice' }, { id: 'c3', item: 'rice' }],
+      currentIndex: 3,
+      served: 3,
+      wrong: 0,
+      missed: 0,
+      revenue: 48_000,
+      feedback: '',
+      applicantsGenerated: 0,
+    },
+  });
+
+  useGameStore.getState().finishManagerMode();
+
+  const state = useGameStore.getState();
+  assert.equal(state.gamePhase, 'closingReport');
+  assert.equal(state.activeModal, 'laporanHarian');
+  assert.equal(state.dayReport.playMode, 'manager');
+  assert.equal(state.pendingApplications.length > 0, true);
+});
+
+test('monthly payment presets affect money happiness and high payment can remove members', () => {
+  setSeed(4);
+  const members = NPC_DATABASE.slice(0, 3).map((npc) => ({ ...npc, joinDate: '2026-01-01', hasAppliedForLoan: false }));
+  resetTo({
+    gamePhase: 'monthlyMeeting',
+    money: 1_000_000,
+    happiness: 50,
+    members,
+    memberCount: members.length,
+  });
+
+  useGameStore.getState().chooseMonthlyPayment('low');
+  let state = useGameStore.getState();
+  assert.equal(state.money, 1_000_000 + (members.length * 25_000));
+  assert.equal(state.happiness, 55);
+  assert.equal(state.gamePhase, 'restockPhase');
+
+  resetTo({
+    gamePhase: 'monthlyMeeting',
+    money: 1_000_000,
+    happiness: 50,
+    members,
+    memberCount: members.length,
+  });
+
+  useGameStore.getState().chooseMonthlyPayment('high');
+  state = useGameStore.getState();
+  assert.equal(state.money, 1_000_000 + (members.length * 100_000));
+  assert.equal(state.happiness, 40);
+  assert.equal(state.memberCount <= members.length, true);
 });

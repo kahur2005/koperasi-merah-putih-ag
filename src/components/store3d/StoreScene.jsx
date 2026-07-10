@@ -8,6 +8,77 @@ import TokoFurnitur from './TokoFurnitur';
 import PasarPasokan from '../hud/PasarPasokan';
 import { clampStorePosition, isWallFurniture } from '../../utils/storeBounds.js';
 
+const MANAGER_ITEM_BY_FURNITURE = {
+  riceRack: 'rice',
+  goodsRack: 'rice',
+  oilRack: 'cookingOil',
+  lpgStack: 'lpgGas',
+};
+
+const MANAGER_ITEM_LABELS = {
+  rice: 'beras',
+  cookingOil: 'minyak goreng',
+  lpgGas: 'gas LPG',
+};
+
+function ManagerModeOverlay() {
+  const managerSession = useGameStore((s) => s.managerSession);
+  const finishManagerMode = useGameStore((s) => s.finishManagerMode);
+  const [secondsLeft, setSecondsLeft] = useState(managerSession?.durationSeconds || 60);
+
+  useEffect(() => {
+    if (!managerSession) return undefined;
+
+    const updateTimer = () => {
+      const elapsed = Math.floor((Date.now() - managerSession.startedAt) / 1000);
+      const nextSecondsLeft = Math.max(0, managerSession.durationSeconds - elapsed);
+      setSecondsLeft(nextSecondsLeft);
+      if (nextSecondsLeft <= 0) {
+        finishManagerMode();
+      }
+    };
+
+    updateTimer();
+    const timer = window.setInterval(updateTimer, 250);
+    return () => window.clearInterval(timer);
+  }, [finishManagerMode, managerSession]);
+
+  useEffect(() => {
+    if (!managerSession) return;
+    if (managerSession.currentIndex >= managerSession.totalCustomers) {
+      finishManagerMode();
+    }
+  }, [finishManagerMode, managerSession]);
+
+  if (!managerSession) return null;
+
+  const request = managerSession.customerQueue[managerSession.currentIndex];
+
+  return (
+    <div className="manager-mode-hud" role="status">
+      <div>
+        <span className="manager-kicker">Manager Mode</span>
+        <strong>{secondsLeft}s</strong>
+      </div>
+      <p>
+        {request
+          ? `Pelanggan meminta ${MANAGER_ITEM_LABELS[request.item] || request.item}. Klik rak/barang yang benar.`
+          : 'Semua pelanggan sudah dilayani.'}
+      </p>
+      <div className="manager-stats">
+        <span>{managerSession.currentIndex}/{managerSession.totalCustomers}</span>
+        <span>Benar {managerSession.served}</span>
+        <span>Salah {managerSession.wrong}</span>
+        <span>Lewat {managerSession.missed}</span>
+      </div>
+      {managerSession.feedback && <small>{managerSession.feedback}</small>}
+      <button className="btn btn-primary" onClick={finishManagerMode}>
+        Akhiri Sesi
+      </button>
+    </div>
+  );
+}
+
 export default function StoreScene() {
   const furniturePositions = useGameStore((s) => s.furniturePositions);
   const placementMode = useGameStore((s) => s.placementMode);
@@ -18,6 +89,8 @@ export default function StoreScene() {
   const rotateFurniture = useGameStore((s) => s.rotateFurniture);
   const deleteFurniture = useGameStore((s) => s.deleteFurniture);
   const setFurniturePosition = useGameStore((s) => s.setFurniturePosition);
+  const gamePhase = useGameStore((s) => s.gamePhase);
+  const serveManagerCustomer = useGameStore((s) => s.serveManagerCustomer);
 
   const storeSize = useGameStore((s) => s.storeSize);
   const updatePlacement = useGameStore((s) => s.updatePlacement);
@@ -27,6 +100,14 @@ export default function StoreScene() {
 
   const handleFurnitureClick = (id) => {
     if (placementMode) return;
+    if (gamePhase === 'managerMode') {
+      const clickedItem = furniturePositions.find((f) => f.id === id);
+      const requestedItem = MANAGER_ITEM_BY_FURNITURE[clickedItem?.type];
+      if (requestedItem) {
+        serveManagerCustomer(requestedItem);
+      }
+      return;
+    }
     setSelectedId(id);
   };
 
@@ -253,7 +334,8 @@ export default function StoreScene() {
       </div>
 
       {/* HTML overlay sidebar */}
-      <TokoFurnitur selectedId={selectedId} setSelectedId={setSelectedId} />
+      {gamePhase === 'managerMode' && <ManagerModeOverlay />}
+      {gamePhase !== 'managerMode' && <TokoFurnitur selectedId={selectedId} setSelectedId={setSelectedId} />}
       {activeModal === 'pasar' && <PasarPasokan />}
     </div>
   );

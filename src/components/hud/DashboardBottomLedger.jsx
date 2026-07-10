@@ -17,6 +17,9 @@ export default function DashboardBottomLedger() {
   const setSelectedNpc = useGameStore((state) => state.setSelectedNpc);
   const setSelectedLoan = useGameStore((state) => state.setSelectedLoan);
   const endDay = useGameStore((state) => state.endDay);
+  const startSalesSimulation = useGameStore((state) => state.startSalesSimulation);
+  const startManagerMode = useGameStore((state) => state.startManagerMode);
+  const setView = useGameStore((state) => state.setView);
   const dateObj = dayjs(currentDate);
   const monthName = UI.BULAN_NAMES[dateObj.month()];
 
@@ -65,10 +68,27 @@ export default function DashboardBottomLedger() {
         </button>
       </div>
 
-      <button className="btn btn-primary btn-endday" onClick={endDay} disabled={gamePhase !== 'storeOpen'}>
-        <span>{gamePhase === 'storeOpen' ? UI.AKHIRI_HARI : 'Toko Belum Dibuka'}</span>
-        <span className="endday-subtitle">{gamePhase === 'storeOpen' ? 'Simulasikan Penjualan' : 'Selesaikan restok dulu'}</span>
-      </button>
+      {gamePhase === 'readyToOpen' ? (
+        <div className="day-action-stack">
+          <button className="btn btn-primary btn-endday" onClick={startManagerMode}>
+            <span>Mainkan 3D</span>
+            <span className="endday-subtitle">Manager Mode</span>
+          </button>
+          <button className="btn btn-secondary btn-simulate" onClick={startSalesSimulation}>
+            Simulasi Hari
+          </button>
+        </div>
+      ) : gamePhase === 'setupStore' ? (
+        <button className="btn btn-primary btn-endday" onClick={() => setView('store3d')}>
+          <span>Susun Toko</span>
+          <span className="endday-subtitle">Pasang kasir dan rak</span>
+        </button>
+      ) : (
+        <button className="btn btn-primary btn-endday" onClick={endDay} disabled={gamePhase !== 'storeOpen'}>
+          <span>{gamePhase === 'storeOpen' ? UI.AKHIRI_HARI : 'Toko Belum Dibuka'}</span>
+          <span className="endday-subtitle">{gamePhase === 'storeOpen' ? 'Simulasikan Penjualan' : 'Selesaikan restok dulu'}</span>
+        </button>
+      )}
     </section>
   );
 }

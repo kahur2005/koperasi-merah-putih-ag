@@ -67,6 +67,18 @@ export default function LaporanHarian() {
 
         {/* Stats breakdown */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '17px', margin: '16px 0' }}>
+          {dayReport.playMode === 'manager' && dayReport.manager && (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Mode:</span>
+                <span style={{ fontWeight: '600' }}>Manager 3D</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Klik salah:</span>
+                <span style={{ fontWeight: '600' }}>{dayReport.manager.wrong}</span>
+              </div>
+            </>
+          )}
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span style={{ color: 'var(--text-secondary)' }}>{UI.PELANGGAN_DILAYANI}:</span>
             <span style={{ fontWeight: '600' }}>{itemsSold} / {totalCustomers}</span>
