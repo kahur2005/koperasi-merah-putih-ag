@@ -136,7 +136,22 @@ test('setFurniturePosition moves selected furniture with store bounds and rotati
   useGameStore.getState().setFurniturePosition('item-1', 150, -20, 90);
 
   const item = useGameStore.getState().furniturePositions[0];
-  assert.equal(item.x, 100);
-  assert.equal(item.y, 0);
+  assert.equal(item.x, 92);
+  assert.equal(item.y, -17);
   assert.equal(item.rotation, 90);
+});
+
+test('moveFurniture keeps furniture inside upgraded store bounds', () => {
+  resetTo({
+    storeSize: 'large',
+    furniturePositions: [
+      { id: 'item-1', type: 'cashier', x: 50, y: 50, rotation: 0, color: '#B45309' },
+    ],
+  });
+
+  useGameStore.getState().moveFurniture('item-1', -999, 999);
+
+  const item = useGameStore.getState().furniturePositions[0];
+  assert.equal(item.x, -42);
+  assert.equal(item.y, 192);
 });

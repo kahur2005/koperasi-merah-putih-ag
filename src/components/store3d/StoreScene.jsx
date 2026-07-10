@@ -6,6 +6,7 @@ import StoreFloor from './StoreFloor';
 import Furniture from './Furniture';
 import TokoFurnitur from './TokoFurnitur';
 import PasarPasokan from '../hud/PasarPasokan';
+import { clampStorePosition, isWallFurniture } from '../../utils/storeBounds.js';
 
 export default function StoreScene() {
   const furniturePositions = useGameStore((s) => s.furniturePositions);
@@ -33,7 +34,7 @@ export default function StoreScene() {
     let xWorld = point.x;
     let zWorld = point.z;
     
-    if (type === 'prabowoPicture' || type === 'gibranPicture') {
+    if (isWallFurniture(type)) {
       const width = storeSize === 'large' ? 20 : 10;
       const depth = storeSize === 'large' ? 30 : 15;
       
@@ -62,23 +63,26 @@ export default function StoreScene() {
           zWorld = zWorld > 0 ? 3 : -3;
         }
       }
-      return { 
+      const clamped = clampStorePosition({
         x: Math.round(xWorld * 10 + 50), 
         y: Math.round(zWorld * 10 + 50),
+      }, storeSize, type);
+      return {
+        ...clamped,
         rot
       };
     }
     
-    return {
+    return clampStorePosition({
       x: Math.round(xWorld * 10 + 50),
       y: Math.round(zWorld * 10 + 50)
-    };
+    }, storeSize, type);
   };
 
   const confirmPlacementAtPoint = (point) => {
     if (!placementMode) return;
     const snapped = getSnappedPosition(point, placementMode.type);
-    if ((placementMode.type === 'prabowoPicture' || placementMode.type === 'gibranPicture') && placementMode.rotation !== snapped.rot) {
+    if (isWallFurniture(placementMode.type) && placementMode.rotation !== snapped.rot) {
       updatePlacement({ rotation: snapped.rot });
     }
     confirmPlacement(snapped.x, snapped.y);
@@ -96,7 +100,7 @@ export default function StoreScene() {
     if (!placementMode) return;
     const snapped = getSnappedPosition(e.point);
     setGhostPos({ x: snapped.x, y: snapped.y });
-    if ((placementMode.type === 'prabowoPicture' || placementMode.type === 'gibranPicture') && placementMode.rotation !== snapped.rot) {
+    if (isWallFurniture(placementMode.type) && placementMode.rotation !== snapped.rot) {
       updatePlacement({ rotation: snapped.rot });
     }
   };

@@ -14,6 +14,7 @@ import {
 } from '../constants/gameConstants.js';
 import { NPC_DATABASE } from '../data/npcData.js';
 import { randomInt, pickRandom, shuffleArray, seededRandom } from '../utils/random.js';
+import { clampStorePosition } from '../utils/storeBounds.js';
 
 // ─── Helper: clamp happiness between 0 and 100 ────────────────────────────────
 const clamp = (val, min = 0, max = 100) => Math.max(min, Math.min(max, val));
@@ -572,8 +573,7 @@ export const useGameStore = create((set, get) => ({
         {
           id: uid(),
           type,
-          x,
-          y,
+          ...clampStorePosition({ x, y }, state.storeSize, type),
           rotation,
           color,
         },
@@ -1294,17 +1294,14 @@ export const useGameStore = create((set, get) => ({
       const item = state.furniturePositions.find((f) => f.id === id);
       if (!item) return {};
 
-      // Bounds checking based on store size
-      // Small: 10m x 15m (posX: -5 to 5, posZ: -7.5 to 7.5) -> (x: 0 to 100, y: 0 to 150)
-      const isLarge = state.storeSize === 'large';
-      const maxX = isLarge ? 200 : 100;
-      const maxY = isLarge ? 300 : 150;
-
       const newPositions = state.furniturePositions.map((f) => {
         if (f.id === id) {
-          const nextX = clamp(f.x + dx, 0, maxX);
-          const nextY = clamp(f.y + dy, 0, maxY);
-          return { ...f, x: nextX, y: nextY };
+          const nextPosition = clampStorePosition(
+            { x: f.x + dx, y: f.y + dy },
+            state.storeSize,
+            f.type
+          );
+          return { ...f, ...nextPosition };
         }
         return f;
       });
@@ -1315,17 +1312,13 @@ export const useGameStore = create((set, get) => ({
   /** 19b. setFurniturePosition */
   setFurniturePosition: (id, x, y, rotation = null) =>
     set((state) => {
-      const isLarge = state.storeSize === 'large';
-      const maxX = isLarge ? 200 : 100;
-      const maxY = isLarge ? 300 : 150;
-
       const newPositions = state.furniturePositions.map((f) => {
         if (f.id !== id) return f;
+        const nextPosition = clampStorePosition({ x, y }, state.storeSize, f.type);
 
         return {
           ...f,
-          x: clamp(x, 0, maxX),
-          y: clamp(y, 0, maxY),
+          ...nextPosition,
           ...(rotation !== null && rotation !== undefined ? { rotation } : {}),
         };
       });
