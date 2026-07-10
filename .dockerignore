@@ -1,0 +1,11 @@
+node_modules
+dist
+.env
+.env.*
+.git
+.gitignore
+docs
+*.log
+npm-debug.log*
+avatar_*.jpg
+dashboard_background_cooperation.png
