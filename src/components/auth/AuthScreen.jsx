@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 
-export default function AuthScreen({ mode, loading, error, onModeChange, onSubmit }) {
+export default function AuthScreen({
+  mode,
+  loading,
+  googleLoading,
+  googleEnabled = true,
+  error,
+  onModeChange,
+  onSubmit,
+  onGoogleLogin,
+}) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const isRegister = mode === 'register';
@@ -67,6 +76,18 @@ export default function AuthScreen({ mode, loading, error, onModeChange, onSubmi
             {loading ? 'Memproses...' : isRegister ? 'Daftar' : 'Login'}
           </button>
         </form>
+
+        <div className="auth-divider"><span>atau</span></div>
+
+        <button
+          className="btn btn-google"
+          type="button"
+          onClick={onGoogleLogin}
+          disabled={loading || googleLoading || !googleEnabled}
+          title={googleEnabled ? 'Login dengan akun Google' : 'Firebase belum dikonfigurasi'}
+        >
+          {googleLoading ? 'Menghubungkan...' : 'Login with Google'}
+        </button>
       </section>
     </main>
   );

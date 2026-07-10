@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { createAuthSaveApp } from './app.js';
 import { createPgPoolFromEnv } from './db.js';
+import { createFirebaseAuthFromEnv } from './firebaseAdmin.js';
 import { createPostgresAuthSaveRepository } from './repositories/postgresAuthSaveRepository.js';
 
 const port = Number(process.env.API_PORT || 3001);
@@ -13,10 +14,12 @@ if (!jwtSecret) {
 
 const pool = createPgPoolFromEnv();
 const repository = createPostgresAuthSaveRepository(pool);
+const firebaseAuth = createFirebaseAuthFromEnv();
 const app = createAuthSaveApp({
   repository,
   jwtSecret,
   clientOrigin: process.env.CLIENT_ORIGIN || '*',
+  firebaseAuth,
 });
 
 const server = app.listen(port, () => {

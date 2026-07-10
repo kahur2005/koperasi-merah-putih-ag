@@ -13,16 +13,36 @@ export function createMemoryAuthSaveRepository() {
       return repository.users.find((user) => user.id === id) || null;
     },
 
-    async createUser({ username, passwordHash }) {
+    async findUserByGoogleUid(googleUid) {
+      return repository.users.find((user) => user.google_uid === googleUid) || null;
+    },
+
+    async createUser({ username, passwordHash, authProvider = 'password', googleUid = null, email = null, displayName = null, avatarUrl = null }) {
       const user = {
         id: crypto.randomUUID(),
         username,
-        password_hash: passwordHash,
+        password_hash: passwordHash || null,
+        auth_provider: authProvider,
+        google_uid: googleUid,
+        email,
+        display_name: displayName,
+        avatar_url: avatarUrl,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
       repository.users.push(user);
       return user;
+    },
+
+    async createGoogleUser({ username, googleUid, email, displayName, avatarUrl }) {
+      return repository.createUser({
+        username,
+        authProvider: 'google',
+        googleUid,
+        email,
+        displayName,
+        avatarUrl,
+      });
     },
 
     async findSavesByUserId(userId) {

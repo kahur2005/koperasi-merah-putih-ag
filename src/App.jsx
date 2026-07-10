@@ -10,6 +10,7 @@ import GameEntryScreen from './components/auth/GameEntryScreen';
 import ConfirmNewGameModal from './components/auth/ConfirmNewGameModal';
 import SettingsModal from './components/auth/SettingsModal';
 import { authSaveClient } from './api/authSaveClient';
+import { hasFirebaseConfig, signInWithGoogleAndGetIdToken, signOutFromFirebase } from './api/firebaseClient';
 import './index.css';
 
 const NOTIFICATION_AUTO_CLOSE_MS = 4000;
@@ -42,6 +43,7 @@ export default function App() {
   const [appPhase, setAppPhase] = useState('auth');
   const [authMode, setAuthMode] = useState('login');
   const [authLoading, setAuthLoading] = useState(true);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [authError, setAuthError] = useState('');
   const [entryError, setEntryError] = useState('');
   const [user, setUser] = useState(null);
@@ -171,6 +173,24 @@ export default function App() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    setAuthError('');
+    try {
+      const idToken = await signInWithGoogleAndGetIdToken();
+      const result = await authSaveClient.loginWithGoogle(idToken);
+      localStorage.setItem(TOKEN_STORAGE_KEY, result.token);
+      setToken(result.token);
+      setUser(result.user);
+      await refreshSave(result.token);
+      setAppPhase('gameEntry');
+    } catch (error) {
+      setAuthError(error.message);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handleContinue = (slot = 'auto') => {
     const selectedSave = saves[slot] || saves.auto || saves.manual;
     if (!selectedSave?.gameState) return;
@@ -210,9 +230,10 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     window.clearTimeout(saveTimerRef.current);
+    await signOutFromFirebase();
     setToken(null);
     setUser(null);
     setSaves({ auto: null, manual: null });
@@ -244,12 +265,15 @@ export default function App() {
         <AuthScreen
           mode={authMode}
           loading={authLoading}
+          googleLoading={googleLoading}
+          googleEnabled={hasFirebaseConfig()}
           error={authError}
           onModeChange={(mode) => {
             setAuthMode(mode);
             setAuthError('');
           }}
           onSubmit={handleAuthSubmit}
+          onGoogleLogin={handleGoogleLogin}
         />
       </div>
     );

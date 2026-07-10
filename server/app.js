@@ -20,6 +20,10 @@ function publicUser(user) {
   return {
     id: user.id,
     username: user.username,
+    authProvider: user.auth_provider || 'password',
+    email: user.email || null,
+    displayName: user.display_name || null,
+    avatarUrl: user.avatar_url || null,
     createdAt: user.created_at,
   };
 }
@@ -64,6 +68,29 @@ function summarizeGameState(gameState) {
   };
 }
 
+function usernameBaseFromEmail(email) {
+  const [localPart] = String(email || 'google_user').split('@');
+  const cleaned = localPart
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  return cleaned || 'google_user';
+}
+
+async function createUniqueGoogleUsername(repository, email) {
+  const base = usernameBaseFromEmail(email);
+  let candidate = base;
+  let suffix = 1;
+
+  while (await repository.findUserByUsername(candidate)) {
+    suffix += 1;
+    candidate = `${base}_${suffix}`;
+  }
+
+  return candidate;
+}
+
 function formatSave(save, { includeGameState = false } = {}) {
   if (!save) return null;
   return {
@@ -96,7 +123,7 @@ function buildSavePayload(saves) {
   };
 }
 
-export function createAuthSaveApp({ repository, jwtSecret, clientOrigin = '*' }) {
+export function createAuthSaveApp({ repository, jwtSecret, clientOrigin = '*', firebaseAuth = null }) {
   if (!repository) throw new Error('repository is required');
   if (!jwtSecret) throw new Error('jwtSecret is required');
 
@@ -135,12 +162,50 @@ export function createAuthSaveApp({ repository, jwtSecret, clientOrigin = '*' })
     const password = String(req.body?.password || '');
     const user = await repository.findUserByUsername(username);
 
-    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+    if (!user || !user.password_hash || !(await bcrypt.compare(password, user.password_hash))) {
       res.status(401).json({ error: 'Username atau password salah.' });
       return;
     }
 
     res.json({ user: publicUser(user), token: signToken(user, jwtSecret) });
+  });
+
+  app.post('/api/auth/google', async (req, res) => {
+    if (!firebaseAuth) {
+      res.status(503).json({ error: 'Google login belum dikonfigurasi di server.' });
+      return;
+    }
+
+    const idToken = String(req.body?.idToken || '').trim();
+    if (!idToken) {
+      res.status(400).json({ error: 'Firebase ID token wajib dikirim.' });
+      return;
+    }
+
+    try {
+      const decodedToken = await firebaseAuth.verifyIdToken(idToken);
+      const googleUid = decodedToken.uid;
+      if (!googleUid) {
+        res.status(401).json({ error: 'Token Google tidak valid.' });
+        return;
+      }
+
+      let user = await repository.findUserByGoogleUid(googleUid);
+      if (!user) {
+        const username = await createUniqueGoogleUsername(repository, decodedToken.email);
+        user = await repository.createGoogleUser({
+          username,
+          googleUid,
+          email: decodedToken.email || null,
+          displayName: decodedToken.name || null,
+          avatarUrl: decodedToken.picture || null,
+        });
+      }
+
+      res.json({ user: publicUser(user), token: signToken(user, jwtSecret) });
+    } catch {
+      res.status(401).json({ error: 'Login Google gagal. Coba ulangi.' });
+    }
   });
 
   const requireAuth = authMiddleware(repository, jwtSecret);

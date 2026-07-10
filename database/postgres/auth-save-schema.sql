@@ -3,10 +3,26 @@ create extension if not exists pgcrypto;
 create table if not exists app_users (
   id uuid primary key default gen_random_uuid(),
   username text not null unique,
-  password_hash text not null,
+  password_hash text,
+  auth_provider text not null default 'password',
+  google_uid text unique,
+  email text,
+  display_name text,
+  avatar_url text,
   created_at timestamp without time zone default now(),
   updated_at timestamp without time zone default now()
 );
+
+alter table app_users alter column password_hash drop not null;
+alter table app_users add column if not exists auth_provider text not null default 'password';
+alter table app_users add column if not exists google_uid text;
+alter table app_users add column if not exists email text;
+alter table app_users add column if not exists display_name text;
+alter table app_users add column if not exists avatar_url text;
+
+create unique index if not exists idx_app_users_google_uid
+on app_users (google_uid)
+where google_uid is not null;
 
 create table if not exists game_saves (
   id uuid primary key default gen_random_uuid(),

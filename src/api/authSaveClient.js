@@ -32,6 +32,12 @@ export const authSaveClient = {
       body: JSON.stringify({ username, password }),
     }),
 
+  loginWithGoogle: (idToken) =>
+    request('/api/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ idToken }),
+    }),
+
   me: (token) => request('/api/auth/me', { token }),
 
   getSave: (token) => request('/api/save', { token }),

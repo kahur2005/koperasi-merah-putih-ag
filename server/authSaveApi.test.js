@@ -148,3 +148,76 @@ test('authenticated user can keep separate auto and manual save slots', async ()
   assert.equal(loaded.body.saves.manual.gameState.dayNumber, 5);
   assert.equal(loaded.body.saveSlots.length, 2);
 });
+
+test('google auth creates a user from a verified firebase token', async () => {
+  const repository = createMemoryAuthSaveRepository();
+  const firebaseAuth = {
+    verifyIdToken: async (idToken) => {
+      assert.equal(idToken, 'valid-google-token');
+      return {
+        uid: 'google-uid-1',
+        email: 'player@example.com',
+        name: 'Player Satu',
+        picture: 'https://example.com/avatar.png',
+      };
+    },
+  };
+  const app = createAuthSaveApp({ repository, jwtSecret: JWT_SECRET, firebaseAuth });
+
+  const response = await request(app, '/api/auth/google', {
+    method: 'POST',
+    body: { idToken: 'valid-google-token' },
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.user.username, 'player');
+  assert.equal(response.body.user.email, 'player@example.com');
+  assert.equal(response.body.user.authProvider, 'google');
+  assert.equal(typeof response.body.token, 'string');
+  assert.equal(repository.users.length, 1);
+  assert.equal(repository.users[0].google_uid, 'google-uid-1');
+});
+
+test('google auth reuses an existing google user', async () => {
+  const repository = createMemoryAuthSaveRepository();
+  const firebaseAuth = {
+    verifyIdToken: async () => ({
+      uid: 'google-uid-2',
+      email: 'same@example.com',
+      name: 'Same Player',
+    }),
+  };
+  const app = createAuthSaveApp({ repository, jwtSecret: JWT_SECRET, firebaseAuth });
+
+  const first = await request(app, '/api/auth/google', {
+    method: 'POST',
+    body: { idToken: 'first-token' },
+  });
+  const second = await request(app, '/api/auth/google', {
+    method: 'POST',
+    body: { idToken: 'second-token' },
+  });
+
+  assert.equal(first.status, 200);
+  assert.equal(second.status, 200);
+  assert.equal(repository.users.length, 1);
+  assert.equal(first.body.user.id, second.body.user.id);
+});
+
+test('google auth rejects an invalid firebase token', async () => {
+  const repository = createMemoryAuthSaveRepository();
+  const firebaseAuth = {
+    verifyIdToken: async () => {
+      throw new Error('invalid token');
+    },
+  };
+  const app = createAuthSaveApp({ repository, jwtSecret: JWT_SECRET, firebaseAuth });
+
+  const response = await request(app, '/api/auth/google', {
+    method: 'POST',
+    body: { idToken: 'bad-token' },
+  });
+
+  assert.equal(response.status, 401);
+  assert.equal(repository.users.length, 0);
+});

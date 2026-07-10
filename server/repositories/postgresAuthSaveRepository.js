@@ -16,14 +16,35 @@ export function createPostgresAuthSaveRepository(pool) {
       return result.rows[0] || null;
     },
 
-    async createUser({ username, passwordHash }) {
+    async findUserByGoogleUid(googleUid) {
       const result = await pool.query(
-        `insert into app_users (username, password_hash)
-         values ($1, $2)
+        'select * from app_users where google_uid = $1 limit 1',
+        [googleUid]
+      );
+      return result.rows[0] || null;
+    },
+
+    async createUser({ username, passwordHash, authProvider = 'password', googleUid = null, email = null, displayName = null, avatarUrl = null }) {
+      const result = await pool.query(
+        `insert into app_users (
+           username, password_hash, auth_provider, google_uid, email, display_name, avatar_url
+         )
+         values ($1, $2, $3, $4, $5, $6, $7)
          returning *`,
-        [username, passwordHash]
+        [username, passwordHash || null, authProvider, googleUid, email, displayName, avatarUrl]
       );
       return result.rows[0];
+    },
+
+    async createGoogleUser({ username, googleUid, email, displayName, avatarUrl }) {
+      return this.createUser({
+        username,
+        authProvider: 'google',
+        googleUid,
+        email,
+        displayName,
+        avatarUrl,
+      });
     },
 
     async findMainSaveByUserId(userId) {
