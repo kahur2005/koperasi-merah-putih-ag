@@ -116,10 +116,15 @@ const SplitWall = ({ position, rotation, length, height, hasDoor, hasText, wallT
 
 export default function StoreFloor({ onPointerMove, onClick, onDoubleClick }) {
   const storeSize = useGameStore((s) => s.storeSize);
+  const placementMode = useGameStore((s) => s.placementMode);
 
   const width = storeSize === 'large' ? STORE.UPGRADED_SIZE.width : STORE.BASE_SIZE.width;
   const depth = storeSize === 'large' ? STORE.UPGRADED_SIZE.depth : STORE.BASE_SIZE.depth;
   const height = 5; 
+  const isWallPlacement = placementMode?.type === 'prabowoPicture' || placementMode?.type === 'gibranPicture';
+  const wallPointerMove = isWallPlacement ? onPointerMove : undefined;
+  const wallClick = isWallPlacement ? onClick : undefined;
+  const wallDoubleClick = isWallPlacement ? onDoubleClick : undefined;
 
   return (
     <group>
@@ -144,9 +149,9 @@ export default function StoreFloor({ onPointerMove, onClick, onDoubleClick }) {
         wallType="back"
         storeWidth={width}
         storeDepth={depth}
-        onPointerMove={onPointerMove}
-        onClick={onClick}
-        onDoubleClick={onDoubleClick}
+        onPointerMove={wallPointerMove}
+        onClick={wallClick}
+        onDoubleClick={wallDoubleClick}
       />
       
       <SplitWall 
@@ -158,9 +163,9 @@ export default function StoreFloor({ onPointerMove, onClick, onDoubleClick }) {
         wallType="left"
         storeWidth={width}
         storeDepth={depth}
-        onPointerMove={onPointerMove}
-        onClick={onClick}
-        onDoubleClick={onDoubleClick}
+        onPointerMove={wallPointerMove}
+        onClick={wallClick}
+        onDoubleClick={wallDoubleClick}
       />
 
       <SplitWall 
@@ -172,9 +177,9 @@ export default function StoreFloor({ onPointerMove, onClick, onDoubleClick }) {
         wallType="right"
         storeWidth={width}
         storeDepth={depth}
-        onPointerMove={onPointerMove}
-        onClick={onClick}
-        onDoubleClick={onDoubleClick}
+        onPointerMove={wallPointerMove}
+        onClick={wallClick}
+        onDoubleClick={wallDoubleClick}
       />
 
       <SplitWall 
@@ -185,9 +190,9 @@ export default function StoreFloor({ onPointerMove, onClick, onDoubleClick }) {
         wallType="front"
         storeWidth={width}
         storeDepth={depth}
-        onPointerMove={onPointerMove}
-        onClick={onClick}
-        onDoubleClick={onDoubleClick}
+        onPointerMove={wallPointerMove}
+        onClick={wallClick}
+        onDoubleClick={wallDoubleClick}
       />
     </group>
   );
