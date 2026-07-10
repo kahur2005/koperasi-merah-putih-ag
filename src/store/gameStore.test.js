@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { useGameStore } from './gameStore.js';
+import { NPC_DATABASE } from '../data/npcData.js';
 
 const resetTo = (patch = {}) => {
   useGameStore.getState().resetGame();
@@ -103,7 +104,9 @@ test('endDay closes the store and startNewDay enters the restock phase', () => {
 });
 
 test('startNewDay shows restock narrative before deferring new applicant cards until the store opens', () => {
-  resetTo();
+  resetTo({
+    pendingApplications: NPC_DATABASE.slice(1),
+  });
 
   useGameStore.getState().startNewDay();
 
@@ -123,6 +126,36 @@ test('startNewDay shows restock narrative before deferring new applicant cards u
   assert.equal(state.storyQueue.length, 1);
   assert.equal(state.storyQueue[0].title, 'Calon anggota menunggu');
   assert.equal(state.pendingMorningStoryMoments.length, 0);
+});
+
+test('startNewDay builds narrative cards from every generated morning event', () => {
+  const member = { ...NPC_DATABASE[0], hasAppliedForLoan: false };
+  resetTo({
+    currentDate: '2026-01-02',
+    members: [member],
+    memberCount: 1,
+    krisisStartDay: 1,
+    pendingApplications: NPC_DATABASE.slice(2),
+    loanSchedule: [{
+      dayNumber: 1,
+      memberId: member.id,
+      memberName: member.nama || member.name,
+      jumlahPinjaman: 500_000,
+      tenorBulan: 1,
+      alasan: 'Meningkatkan produksi beras',
+      barangTerkait: 'rice',
+    }],
+  });
+
+  useGameStore.getState().startNewDay();
+
+  const titles = useGameStore.getState().pendingMorningStoryMoments.map((moment) => moment.title);
+  assert.deepEqual(titles, [
+    'Krisis ekonomi dimulai',
+    'Pengajuan modal usaha',
+    'Ada warga ingin bergabung',
+    'Calon anggota menunggu',
+  ]);
 });
 
 test('setFurniturePosition moves selected furniture with store bounds and rotation', () => {

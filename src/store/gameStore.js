@@ -839,6 +839,7 @@ export const useGameStore = create((set, get) => ({
       const today = dayjs(state.currentDate);
       const dayOfMonth = today.date();
       const isFirstOfMonth = dayOfMonth === 1;
+      const morningStoryEvents = [];
 
       // ── a. Reset supplier stocks ──
       const newSupplierStockPT = { ...SUPPLIERS.PT.dailyStock };
@@ -868,6 +869,13 @@ export const useGameStore = create((set, get) => ({
         ...state.pendingApplications,
         ...newApplicants,
       ];
+      newApplicants.forEach((applicant) => {
+        morningStoryEvents.push({
+          type: 'memberApplication',
+          dayNumber: state.dayNumber,
+          applicant,
+        });
+      });
 
       // ── d. Check loanSchedule for today's loan requests ──
       let newPendingLoanRequests = [...state.pendingLoanRequests];
@@ -895,7 +903,7 @@ export const useGameStore = create((set, get) => ({
             // Check if we hit the limit of requests on the dashboard
             const MAX_REQUESTS = 2; // Keep max loan requests at 2 for the HUD
             if (newPendingLoanRequests.length < MAX_REQUESTS) {
-              newPendingLoanRequests.push({
+              const loanRequest = {
                 id: uid(),
                 memberId: entry.memberId,
                 memberName: entry.memberName,
@@ -907,6 +915,12 @@ export const useGameStore = create((set, get) => ({
                 alasan: entry.alasan,
                 barangTerkait: entry.barangTerkait || null,
                 requestDate: state.currentDate,
+              };
+              newPendingLoanRequests.push(loanRequest);
+              morningStoryEvents.push({
+                type: 'loanRequest',
+                dayNumber: state.dayNumber,
+                loan: loanRequest,
               });
               // Mark member as having applied
               if (member) member.hasAppliedForLoan = true;
@@ -1066,6 +1080,10 @@ export const useGameStore = create((set, get) => ({
           id: uid(),
           text: '⚠️ KRISIS EKONOMI! Harga-harga melonjak selama 7 hari. Jual di bawah harga beli untuk menjaga kepuasan!',
         });
+        morningStoryEvents.push({
+          type: 'krisisEkonomi',
+          dayNumber: state.dayNumber,
+        });
       }
 
       // Activate Gagal Panen notification and price hike if today
@@ -1086,9 +1104,13 @@ export const useGameStore = create((set, get) => ({
           id: uid(),
           text: '🌾 GAGAL PANEN! Harga beras UMKM naik 50%. Beli dari UMKM hari ini untuk mendukung petani!',
         });
+        morningStoryEvents.push({
+          type: 'gagalPanen',
+          dayNumber: state.dayNumber,
+        });
       }
 
-      const pendingMorningStoryMoments = [];
+      const pendingMorningStoryMoments = buildMorningStoryMoments(morningStoryEvents);
       let storyPatch = storyMomentPatch(state, `restock_${state.dayNumber}`, {
         speaker: 'Bu Siti',
         title: 'Waktunya restok pasokan',
@@ -1098,55 +1120,6 @@ export const useGameStore = create((set, get) => ({
         actionLabel: 'Buka Pasar',
         actionModal: 'pasar',
       });
-      if (state.dayNumber === newKrisisStartDay) {
-        pendingMorningStoryMoments.push(createStoryMoment(`krisis_${state.dayNumber}`, {
-          speaker: 'Dewan Pengawas',
-          title: 'Krisis ekonomi dimulai',
-          text: 'Harga sedang menekan warga. Selama krisis, turunkan margin agar kebahagiaan tidak runtuh.',
-          avatar: '/assets/avatars/female_2_dewi.jpg',
-          tone: 'danger',
-          actionLabel: 'Atur Harga',
-          actionModal: 'harga',
-        }));
-      } else if (state.dayNumber === newGagalPanenDay) {
-        pendingMorningStoryMoments.push(createStoryMoment(`gagal_panen_${state.dayNumber}`, {
-          speaker: 'Pak Budi',
-          title: 'Sawah desa gagal panen',
-          text: 'Petani butuh koperasi hari ini. Beli dari UMKM agar dukungan terasa langsung dan warga tetap percaya.',
-          avatar: '/assets/avatars/male_1_budi.jpg',
-          tone: 'warning',
-          actionLabel: 'Buka Pasar',
-          actionModal: 'pasar',
-        }));
-      } else if (newPendingLoanRequests.length > state.pendingLoanRequests.length) {
-        const loanReq = newPendingLoanRequests[newPendingLoanRequests.length - 1];
-        pendingMorningStoryMoments.push(createStoryMoment(`loan_request_${state.dayNumber}`, {
-          speaker: displayName(loanReq),
-          title: 'Pengajuan modal usaha',
-          text: `${displayName(loanReq)} mengajukan pinjaman untuk ${loanReq.alasan}. Pilih bunga yang membantu usaha tetap hidup.`,
-          avatar: loanReq.avatar || '/assets/avatars/male_2_ahmad.jpg',
-          actionLabel: 'Tinjau Pinjaman',
-          actionModal: 'pinjamanAktifList',
-        }));
-      } else if (newPendingApplications.length > state.pendingApplications.length) {
-        const applicant = newPendingApplications[newPendingApplications.length - 1];
-        pendingMorningStoryMoments.push(createStoryMoment(`application_intro_${state.dayNumber}`, {
-          speaker: 'Bu Siti',
-          title: 'Ada warga ingin bergabung',
-          text: `${displayName(applicant)} datang mengajukan diri sebagai anggota koperasi. Tinjau dulu profilnya sebelum diterima, karena anggota baru akan ikut menyetor simpanan dan bisa mengajukan pinjaman.`,
-          avatar: '/assets/avatars/female_1_siti.jpg',
-          actionLabel: 'Lanjut',
-          actionModal: null,
-        }));
-        pendingMorningStoryMoments.push(createStoryMoment(`application_${state.dayNumber}`, {
-          speaker: displayName(applicant),
-          title: 'Calon anggota menunggu',
-          text: 'Saya ingin ikut koperasi supaya simpanan dan kebutuhan usaha lebih jelas. Mohon ditinjau, Pengurus.',
-          avatar: applicant.avatar,
-          actionLabel: 'Lihat Anggota',
-          actionModal: 'pinjamanAktifList',
-        }));
-      }
 
       // Clean up expired events
       if (newKrisisDaysRemaining <= 0) {
@@ -1443,4 +1416,66 @@ function generateMonthlyLoanSchedule(monthStart, members, activeLoans, currentDa
   }
 
   return schedule;
+}
+
+function buildMorningStoryMoments(storyEvents) {
+  const moments = [];
+  const priority = {
+    krisisEkonomi: 10,
+    gagalPanen: 20,
+    loanRequest: 30,
+    memberApplication: 40,
+  };
+
+  [...storyEvents].sort((a, b) => (priority[a.type] || 99) - (priority[b.type] || 99)).forEach((event) => {
+    if (event.type === 'krisisEkonomi') {
+      moments.push(createStoryMoment(`krisis_${event.dayNumber}`, {
+        speaker: 'Dewan Pengawas',
+        title: 'Krisis ekonomi dimulai',
+        text: 'Harga sedang menekan warga. Selama krisis, turunkan margin agar kebahagiaan tidak runtuh.',
+        avatar: '/assets/avatars/female_2_dewi.jpg',
+        tone: 'danger',
+        actionLabel: 'Atur Harga',
+        actionModal: 'harga',
+      }));
+    } else if (event.type === 'gagalPanen') {
+      moments.push(createStoryMoment(`gagal_panen_${event.dayNumber}`, {
+        speaker: 'Pak Budi',
+        title: 'Sawah desa gagal panen',
+        text: 'Petani butuh koperasi hari ini. Beli dari UMKM agar dukungan terasa langsung dan warga tetap percaya.',
+        avatar: '/assets/avatars/male_1_budi.jpg',
+        tone: 'warning',
+        actionLabel: 'Buka Pasar',
+        actionModal: 'pasar',
+      }));
+    } else if (event.type === 'loanRequest') {
+      moments.push(createStoryMoment(`loan_request_${event.dayNumber}_${event.loan.id}`, {
+        speaker: displayName(event.loan),
+        title: 'Pengajuan modal usaha',
+        text: `${displayName(event.loan)} mengajukan pinjaman untuk ${event.loan.alasan}. Pilih bunga yang membantu usaha tetap hidup.`,
+        avatar: event.loan.avatar || '/assets/avatars/male_2_ahmad.jpg',
+        actionLabel: 'Tinjau Pinjaman',
+        actionModal: 'pinjamanAktifList',
+      }));
+    } else if (event.type === 'memberApplication') {
+      moments.push(createStoryMoment(`application_intro_${event.dayNumber}_${event.applicant.id}`, {
+        speaker: 'Bu Siti',
+        title: 'Ada warga ingin bergabung',
+        text: `${displayName(event.applicant)} datang mengajukan diri sebagai anggota koperasi. Tinjau dulu profilnya sebelum diterima, karena anggota baru akan ikut menyetor simpanan dan bisa mengajukan pinjaman.`,
+        avatar: '/assets/avatars/female_1_siti.jpg',
+        actionLabel: 'Lanjut',
+        actionModal: null,
+      }));
+      moments.push(createStoryMoment(`application_${event.dayNumber}_${event.applicant.id}`, {
+        speaker: displayName(event.applicant),
+        title: 'Calon anggota menunggu',
+        text: 'Saya ingin ikut koperasi supaya simpanan dan kebutuhan usaha lebih jelas. Mohon ditinjau, Pengurus.',
+        avatar: event.applicant.avatar,
+        actionLabel: 'Lihat Anggota',
+        actionModal: 'pinjamanAktifList',
+      }));
+    }
+  });
+
+  return moments;
 }
