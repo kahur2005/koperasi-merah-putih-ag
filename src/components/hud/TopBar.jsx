@@ -35,7 +35,7 @@ export default function TopBar() {
       </div>
 
       {/* Right Side: Happiness, Members, Money */}
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
         <div className={`stat-pill happiness-pill ${happinessClass}`} title={UI.KEBAHAGIAAN}>
           <span>😊</span>
           <span>{happiness}%</span>

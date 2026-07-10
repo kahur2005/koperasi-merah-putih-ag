@@ -72,7 +72,7 @@ export default function Dashboard() {
         })}
       </div>
 
-      <nav className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }} aria-label="Menu utama">
+      <nav className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '21px', alignItems: 'center' }} aria-label="Menu utama">
         <button className="retro-image-btn" onClick={() => setActiveModal('museum')} title={UI.MUSEUM}>
           <img src="/assets/images/ui/btn_museum.png" alt="Museum" style={{ width: '90px' }} />
         </button>
@@ -84,13 +84,6 @@ export default function Dashboard() {
         </button>
       </nav>
 
-      <div className="center-building-area">
-        <div className="store-entry-panel" aria-label="Status toko koperasi">
-          <button className="btn btn-primary btn-masuk" onClick={() => setView('store3d')}>
-            Masuk Toko
-          </button>
-        </div>
-      </div>
 
       <ChapterProgress />
       <AdvisoryMemo />
@@ -145,8 +138,8 @@ export default function Dashboard() {
             onClick={() => setActiveModal('pinjamanAktifList')}
             title="Pinjaman dan anggota"
           >
-            <span style={{ fontSize: '20px' }}>👥</span>
-            <span style={{ fontSize: '10px' }}>Pinjaman/Anggota</span>
+            <span style={{ fontSize: '26px' }}>👥</span>
+            <span style={{ fontSize: '13px' }}>Pinjaman/Anggota</span>
           </button>
         </div>
 
@@ -168,17 +161,17 @@ export default function Dashboard() {
 
       {activeModal === 'gameOver' && gameResult && (
         <div className="modal-overlay" style={{ background: 'rgba(36, 26, 16, 0.95)' }}>
-          <div className="modal-content glass-card" style={{ maxWidth: '460px', textAlign: 'center', padding: '32px' }}>
-            <h1 style={{ fontSize: '28px', color: gameResult.outcome === 'win' ? 'var(--accent-green)' : 'var(--accent-red)', marginBottom: '12px' }}>
+          <div className="modal-content glass-card" style={{ maxWidth: '460px', textAlign: 'center', padding: '42px' }}>
+            <h1 style={{ fontSize: '36px', color: gameResult.outcome === 'win' ? 'var(--accent-green)' : 'var(--accent-red)', marginBottom: '12px' }}>
               {gameResult.outcome === 'win' ? '🏆 SELAMAT! KAMU MENANG!' : '❌ PERMAINAN BERAKHIR'}
             </h1>
-            <p style={{ fontSize: '15px', color: 'var(--text-primary)', marginBottom: '24px', lineHeight: '1.5' }}>
+            <p style={{ fontSize: '20px', color: 'var(--text-primary)', marginBottom: '24px', lineHeight: '1.5' }}>
               {gameResult.reason}
             </p>
 
-            <div className="glass-card" style={{ background: 'var(--paper-2)', border: '3px solid var(--wood-dark)', padding: '16px', marginBottom: '24px', textAlign: 'left' }}>
-              <h3 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>Statistik Koperasi</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+            <div className="glass-card" style={{ background: 'var(--paper-2)', border: '3px solid var(--wood-dark)', padding: '21px', marginBottom: '24px', textAlign: 'left' }}>
+              <h3 style={{ fontSize: '17px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>Statistik Koperasi</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '17px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Sisa Saldo:</span>
                   <span style={{ fontWeight: '700', color: 'var(--accent-yellow)' }}>{formatRupiah(useGameStore.getState().money)}</span>
@@ -202,7 +195,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <button className="btn btn-primary" style={{ padding: '12px 32px', fontSize: '16px' }} onClick={resetGame}>
+            <button className="btn btn-primary" style={{ padding: '12px 32px', fontSize: '21px' }} onClick={resetGame}>
               {UI.BTN_MAIN_LAGI}
             </button>
           </div>

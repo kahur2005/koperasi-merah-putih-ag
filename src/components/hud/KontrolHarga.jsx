@@ -47,7 +47,7 @@ export default function KontrolHarga() {
           <button className="modal-close" onClick={handleClose}>&times;</button>
         </div>
 
-        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '17px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
           {UI.ATUR_HARGA_JUAL}
         </p>
 
@@ -84,14 +84,14 @@ export default function KontrolHarga() {
                   <td style={{ fontWeight: '600' }}>{item.name}</td>
                   <td>{formatRupiah(avgCost)}</td>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <span style={{ color: 'var(--text-secondary)' }}>Rp</span>
                       <input 
                         type="number"
                         value={sellPrice || ''}
                         onChange={(e) => handlePriceChange(item.key, e.target.value)}
                         className="form-input"
-                        style={{ padding: '6px' }}
+                        style={{ padding: '8px' }}
                       />
                     </div>
                   </td>

@@ -150,7 +150,7 @@ export default function TokoFurnitur({ selectedId, setSelectedId }) {
           let desc = '';
           if (def.stockBonus) {
             desc = (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
                 Kapasitas:{' '}
                 {Object.entries(def.stockBonus).map(([k, v], idx) => {
                   let iconPath = '';
@@ -159,7 +159,7 @@ export default function TokoFurnitur({ selectedId, setSelectedId }) {
                   else iconPath = '/assets/images/icon_minyak.png';
                   
                   return (
-                    <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                       +{v} <img src={iconPath} alt={k} style={{ width: '16px', height: '16px' }} />
                       {idx < Object.keys(def.stockBonus).length - 1 && ', '}
                     </span>

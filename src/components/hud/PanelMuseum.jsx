@@ -48,17 +48,17 @@ export default function PanelMuseum() {
         <div style={{ background: 'var(--wood-dark)', display: 'flex', flexDirection: 'column' }}>
           {/* Top Window Bar */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px' }}>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
               <div style={{ width: '12px', height: '12px', borderRadius: '0', background: '#ff5f56' }} onClick={handleClose} cursor="pointer" />
               <div style={{ width: '12px', height: '12px', borderRadius: '0', background: '#ffbd2e' }} />
               <div style={{ width: '12px', height: '12px', borderRadius: '0', background: '#27c93f' }} />
             </div>
-            <h2 style={{ fontSize: '14px', margin: 0, fontWeight: '600', color: 'var(--ink-inverse)' }}>🏛 {UI.MUSEUM_TITLE || 'Museum Koperasi'}</h2>
+            <h2 style={{ fontSize: '18px', margin: 0, fontWeight: '600', color: 'var(--ink-inverse)' }}>🏛 {UI.MUSEUM_TITLE || 'Museum Koperasi'}</h2>
             <div style={{ width: '44px' }}></div> {/* Spacer for centering */}
           </div>
 
           {/* Browser Tabs */}
-          <div style={{ display: 'flex', padding: '8px 16px 0 16px', gap: '4px', overflowX: 'auto' }}>
+          <div style={{ display: 'flex', padding: '8px 16px 0 16px', gap: '5px', overflowX: 'auto' }}>
             {MUSEUM_TABS.map((tab) => (
               <button
                 key={tab.id}
@@ -66,14 +66,14 @@ export default function PanelMuseum() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
+                  gap: '10px',
                   padding: '10px 20px',
                   background: activeTab === tab.id ? 'var(--paper)' : 'var(--wood-mid)',
                   border: 'none',
                   borderRadius: '0',
                   color: activeTab === tab.id ? 'var(--ink)' : 'var(--ink-inverse)',
                   fontWeight: activeTab === tab.id ? '700' : '500',
-                  fontSize: '14px',
+                  fontSize: '18px',
                   cursor: 'pointer',
                   borderTop: activeTab === tab.id ? '3px solid var(--accent-green)' : '3px solid transparent',
                   boxShadow: 'none',
@@ -90,26 +90,26 @@ export default function PanelMuseum() {
         </div>
 
         {/* Content Area with Carousel */}
-        <div style={{ padding: '24px', background: 'var(--paper)', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '16px', color: 'var(--accent-yellow)', textAlign: 'center' }}>
+        <div style={{ padding: '31px', background: 'var(--paper)', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
+          <h1 style={{ fontSize: '31px', fontWeight: '800', marginBottom: '16px', color: 'var(--accent-yellow)', textAlign: 'center' }}>
             {content.title}
           </h1>
           
           <div className="carousel-container" style={{ flex: 1 }}>
             <button className="carousel-arrow" onClick={handlePrev}>&larr;</button>
 
-            <div className="carousel-slide" style={{ padding: '0', background: 'transparent', border: 'none', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="carousel-slide" style={{ padding: '0', background: 'transparent', border: 'none', display: 'flex', flexDirection: 'column', gap: '26px' }}>
               {/* Image for the current section */}
               <div style={{ width: '100%', height: '200px', borderRadius: '0', overflow: 'hidden', border: '3px solid var(--wood-dark)' }}>
                 <img src={currentSlide.image || content.image} alt={content.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
 
               {/* Text for the current section */}
-              <div style={{ background: 'var(--paper-2)', padding: '20px', borderRadius: '0', border: '3px solid var(--wood-dark)' }}>
-                <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '12px', color: 'var(--accent-green)' }}>
+              <div style={{ background: 'var(--paper-2)', padding: '26px', borderRadius: '0', border: '3px solid var(--wood-dark)' }}>
+                <h3 style={{ fontSize: '26px', fontWeight: '800', marginBottom: '12px', color: 'var(--accent-green)' }}>
                   {currentSlide.subtitle}
                 </h3>
-                <p style={{ fontSize: '15px', color: 'var(--ink)', lineHeight: '1.7', whiteSpace: 'pre-line' }}>
+                <p style={{ fontSize: '20px', color: 'var(--ink)', lineHeight: '1.7', whiteSpace: 'pre-line' }}>
                   {currentSlide.text}
                 </p>
               </div>
@@ -120,7 +120,7 @@ export default function PanelMuseum() {
 
           {/* Page / Dot Indicators */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '24px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+            <span style={{ fontSize: '16px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
               Halaman {activeIdx + 1} dari {numSlides}
             </span>
             <div className="carousel-dots">

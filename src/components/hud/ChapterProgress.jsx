@@ -11,6 +11,7 @@ function formatGoalValue(goal, value) {
 
 export default function ChapterProgress() {
   const snapshot = useGameStore((state) => state);
+  const setView = useGameStore((s) => s.setView);
   const { activeChapter, nextGoal, chapters } = getChapterProgress(snapshot);
 
   return (
@@ -46,6 +47,12 @@ export default function ChapterProgress() {
           <strong>{nextGoal.label}</strong>
         </div>
       )}
+
+      <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+        <button className="btn btn-primary" onClick={() => setView('store3d')} style={{ padding: '16px 32px', fontSize: '20px', width: '100%' }}>
+          Masuk Toko
+        </button>
+      </div>
     </section>
   );
 }
