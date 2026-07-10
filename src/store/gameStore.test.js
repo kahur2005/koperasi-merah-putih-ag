@@ -9,6 +9,7 @@ const resetTo = (patch = {}) => {
     storyFlags: {},
     currentStoryMoment: null,
     storyQueue: [],
+    pendingMorningStoryMoments: [],
     ...patch,
   });
 };
@@ -101,15 +102,25 @@ test('endDay closes the store and startNewDay enters the restock phase', () => {
   assert.equal(useGameStore.getState().gamePhase, 'storeOpen');
 });
 
-test('startNewDay introduces new applicants with a Bu Siti tutorial card first', () => {
+test('startNewDay shows restock narrative before deferring new applicant cards until the store opens', () => {
   resetTo();
 
   useGameStore.getState().startNewDay();
 
-  const state = useGameStore.getState();
+  let state = useGameStore.getState();
   assert.equal(state.currentStoryMoment.speaker, 'Bu Siti');
+  assert.equal(state.currentStoryMoment.title, 'Waktunya restok pasokan');
+  assert.equal(state.storyQueue.length, 0);
+  assert.equal(state.pendingMorningStoryMoments.length, 2);
+  assert.equal(state.pendingMorningStoryMoments[0].title, 'Ada warga ingin bergabung');
+  assert.equal(state.pendingMorningStoryMoments[1].title, 'Calon anggota menunggu');
+
+  useGameStore.getState().dismissStoryMoment();
+  useGameStore.getState().openStoreForDay();
+
+  state = useGameStore.getState();
   assert.equal(state.currentStoryMoment.title, 'Ada warga ingin bergabung');
   assert.equal(state.storyQueue.length, 1);
   assert.equal(state.storyQueue[0].title, 'Calon anggota menunggu');
-  assert.notEqual(state.storyQueue[0].speaker, 'Bu Siti');
+  assert.equal(state.pendingMorningStoryMoments.length, 0);
 });

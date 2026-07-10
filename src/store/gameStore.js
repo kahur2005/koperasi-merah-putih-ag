@@ -43,6 +43,12 @@ const storyMomentPatch = (state, id, moment) => {
   };
 };
 
+const createStoryMoment = (id, moment) => ({
+  id,
+  tone: 'normal',
+  ...moment,
+});
+
 // ─── Initial state factory ────────────────────────────────────────────────────
 const createInitialState = () => ({
   // Time
@@ -116,6 +122,7 @@ const createInitialState = () => ({
   currentStoryMoment: null,
   storyQueue: [],
   storyFlags: {},
+  pendingMorningStoryMoments: [],
 
   // Statistics
   statistics: {
@@ -150,7 +157,26 @@ export const useGameStore = create((set, get) => ({
   openRestockPanel: (item = null) => set({ activeModal: 'pasar', restockFocusItem: item }),
 
   /** 2b. openStoreForDay */
-  openStoreForDay: () => set({ gamePhase: 'storeOpen', activeModal: null, restockFocusItem: null }),
+  openStoreForDay: () =>
+    set((state) => {
+      const pendingMoments = state.pendingMorningStoryMoments || [];
+      const [firstMoment, ...remainingMoments] = pendingMoments;
+
+      return {
+        gamePhase: 'storeOpen',
+        activeModal: null,
+        restockFocusItem: null,
+        pendingMorningStoryMoments: [],
+        ...(firstMoment
+          ? {
+              currentStoryMoment: state.currentStoryMoment || firstMoment,
+              storyQueue: state.currentStoryMoment
+                ? [...state.storyQueue, ...pendingMoments]
+                : [...state.storyQueue, ...remainingMoments],
+            }
+          : {}),
+      };
+    }),
 
   /** 2c. completeStoryIntro */
   completeStoryIntro: () =>
@@ -1062,9 +1088,18 @@ export const useGameStore = create((set, get) => ({
         });
       }
 
-      let storyPatch = {};
+      const pendingMorningStoryMoments = [];
+      let storyPatch = storyMomentPatch(state, `restock_${state.dayNumber}`, {
+        speaker: 'Bu Siti',
+        title: 'Waktunya restok pasokan',
+        text: 'Toko sudah tutup. Sebelum hari baru dibuka, isi kembali beras, minyak, dan gas LPG lewat pembelian manual atau otomatis agar warga tidak kecewa besok.',
+        avatar: '/assets/avatars/female_1_siti.jpg',
+        tone: 'success',
+        actionLabel: 'Buka Pasar',
+        actionModal: 'pasar',
+      });
       if (state.dayNumber === newKrisisStartDay) {
-        storyPatch = storyMomentPatch(state, `krisis_${state.dayNumber}`, {
+        pendingMorningStoryMoments.push(createStoryMoment(`krisis_${state.dayNumber}`, {
           speaker: 'Dewan Pengawas',
           title: 'Krisis ekonomi dimulai',
           text: 'Harga sedang menekan warga. Selama krisis, turunkan margin agar kebahagiaan tidak runtuh.',
@@ -1072,9 +1107,9 @@ export const useGameStore = create((set, get) => ({
           tone: 'danger',
           actionLabel: 'Atur Harga',
           actionModal: 'harga',
-        });
+        }));
       } else if (state.dayNumber === newGagalPanenDay) {
-        storyPatch = storyMomentPatch(state, `gagal_panen_${state.dayNumber}`, {
+        pendingMorningStoryMoments.push(createStoryMoment(`gagal_panen_${state.dayNumber}`, {
           speaker: 'Pak Budi',
           title: 'Sawah desa gagal panen',
           text: 'Petani butuh koperasi hari ini. Beli dari UMKM agar dukungan terasa langsung dan warga tetap percaya.',
@@ -1082,35 +1117,35 @@ export const useGameStore = create((set, get) => ({
           tone: 'warning',
           actionLabel: 'Buka Pasar',
           actionModal: 'pasar',
-        });
+        }));
       } else if (newPendingLoanRequests.length > state.pendingLoanRequests.length) {
         const loanReq = newPendingLoanRequests[newPendingLoanRequests.length - 1];
-        storyPatch = storyMomentPatch(state, `loan_request_${state.dayNumber}`, {
+        pendingMorningStoryMoments.push(createStoryMoment(`loan_request_${state.dayNumber}`, {
           speaker: displayName(loanReq),
           title: 'Pengajuan modal usaha',
           text: `${displayName(loanReq)} mengajukan pinjaman untuk ${loanReq.alasan}. Pilih bunga yang membantu usaha tetap hidup.`,
           avatar: loanReq.avatar || '/assets/avatars/male_2_ahmad.jpg',
           actionLabel: 'Tinjau Pinjaman',
           actionModal: 'pinjamanAktifList',
-        });
+        }));
       } else if (newPendingApplications.length > state.pendingApplications.length) {
         const applicant = newPendingApplications[newPendingApplications.length - 1];
-        const introPatch = storyMomentPatch(state, `application_intro_${state.dayNumber}`, {
+        pendingMorningStoryMoments.push(createStoryMoment(`application_intro_${state.dayNumber}`, {
           speaker: 'Bu Siti',
           title: 'Ada warga ingin bergabung',
           text: `${displayName(applicant)} datang mengajukan diri sebagai anggota koperasi. Tinjau dulu profilnya sebelum diterima, karena anggota baru akan ikut menyetor simpanan dan bisa mengajukan pinjaman.`,
           avatar: '/assets/avatars/female_1_siti.jpg',
           actionLabel: 'Lanjut',
           actionModal: null,
-        });
-        storyPatch = storyMomentPatch({ ...state, ...introPatch }, `application_${state.dayNumber}`, {
+        }));
+        pendingMorningStoryMoments.push(createStoryMoment(`application_${state.dayNumber}`, {
           speaker: displayName(applicant),
           title: 'Calon anggota menunggu',
           text: 'Saya ingin ikut koperasi supaya simpanan dan kebutuhan usaha lebih jelas. Mohon ditinjau, Pengurus.',
           avatar: applicant.avatar,
           actionLabel: 'Lihat Anggota',
           actionModal: 'pinjamanAktifList',
-        });
+        }));
       }
 
       // Clean up expired events
@@ -1194,6 +1229,7 @@ export const useGameStore = create((set, get) => ({
         activeModal: gameOver ? 'gameOver' : 'pasar',
         gamePhase: gameOver ? state.gamePhase : 'restockPhase',
         restockFocusItem: null,
+        pendingMorningStoryMoments,
         happiness: newHappiness,
         statistics: statsUpdate,
         gameOver,
