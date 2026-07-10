@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGameStore } from '../../store/gameStore';
+import { UI } from '../../constants/uiStrings';
 import { formatRupiah } from '../../utils/formatRupiah';
 import TopBar from '../hud/TopBar';
 import MissionLedger from '../hud/MissionLedger';

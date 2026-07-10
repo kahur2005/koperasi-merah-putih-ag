@@ -1,3 +1,5 @@
+import { WIN_CONDITIONS } from '../../constants/gameConstants.js';
+
 export function getCombinedStockLabel(stock, stockCapacity) {
   return [
     `Beras: ${stock.rice || 0}/${stockCapacity.rice || 0}`,
@@ -27,7 +29,7 @@ function getLowestStock(stock, capacity) {
 export function getDashboardAdvisory(state, chapterProgress) {
   const { activeChapter, nextGoal } = chapterProgress || {};
   const lowestStock = getLowestStock(state.stock, state.stockCapacity);
-  const targetHappiness = 60;
+  const targetHappiness = WIN_CONDITIONS.HAPPINESS || 60;
 
   let advisory = {
     title: activeChapter?.title || 'Koperasi Merah Putih',
