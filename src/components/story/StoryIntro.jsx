@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../../store/gameStore';
+import { getPrimaryActionLabel, getStoryTransition } from './introFlow';
 
 const STORY_BEATS = [
   {
     speaker: 'Narator Desa',
     title: 'Koperasi di Persimpangan',
     text: 'Di sebuah desa yang sedang tumbuh, koperasi menjadi tempat warga berharap harga tetap adil dan usaha kecil tetap hidup.',
+    avatar: '/assets/images/ui/intro_narrator.png',
   },
   {
     speaker: 'Bu Siti',
@@ -25,37 +27,56 @@ export default function StoryIntro() {
   const [index, setIndex] = useState(0);
   const completeStoryIntro = useGameStore((s) => s.completeStoryIntro);
   const beat = STORY_BEATS[index];
-  const isLast = index === STORY_BEATS.length - 1;
+  const primaryActionLabel = getPrimaryActionLabel(index, STORY_BEATS.length);
 
   const handleNext = () => {
-    if (isLast) {
+    const transition = getStoryTransition(index, STORY_BEATS.length);
+
+    if (transition.type === 'complete') {
       completeStoryIntro();
       return;
     }
-    setIndex((current) => current + 1);
+
+    setIndex(transition.index);
+  };
+
+  const handleSkip = () => {
+    const transition = getStoryTransition(index, STORY_BEATS.length, { skip: true });
+
+    if (transition.type === 'complete') {
+      completeStoryIntro();
+    }
   };
 
   return (
     <div className="story-overlay" role="dialog" aria-modal="true" aria-labelledby="story-title">
-      <div className="story-scene">
-        <div className="story-art" aria-hidden="true">
-          {beat.avatar ? (
-            <img src={beat.avatar} alt="" />
-          ) : (
-            <div className="story-village-mark">KMP</div>
-          )}
-        </div>
+      <div className="story-intro-scene">
+        <img
+          className="story-intro-background"
+          src="/assets/images/ui/intro_village_bg.png"
+          alt=""
+          aria-hidden="true"
+        />
 
-        <div className="story-dialog">
-          <span className="story-speaker">{beat.speaker}</span>
-          <h1 id="story-title">{beat.title}</h1>
-          <p>{beat.text}</p>
+        <div className="story-ledger">
+          <div className="story-portrait-frame">
+            <img className="story-portrait" src={beat.avatar} alt="" />
+          </div>
+
+          <div className="story-ledger-content">
+            <span className="story-speaker-tab">{beat.speaker}</span>
+            <div className="story-copy">
+              <h1 id="story-title" className="story-title">{beat.title}</h1>
+              <p className="story-text">{beat.text}</p>
+            </div>
+          </div>
+
           <div className="story-actions">
-            <button className="btn btn-secondary" onClick={completeStoryIntro}>
-              Lewati
+            <button className="btn btn-primary story-action-primary" onClick={handleNext}>
+              {primaryActionLabel}
             </button>
-            <button className="btn btn-primary" onClick={handleNext}>
-              {isLast ? 'Mulai Mengelola' : 'Lanjut'}
+            <button className="btn btn-secondary story-action-skip" onClick={handleSkip}>
+              Lewati
             </button>
           </div>
         </div>
