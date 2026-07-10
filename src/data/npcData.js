@@ -127,7 +127,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_5_bayu.png',
+    avatar: '/assets/avatars/male_5_bayu.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 1000000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 900000, tenor: 1, barangTerkait: 'lpgGas' },
@@ -141,7 +141,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 1500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_5_vina.png',
+    avatar: '/assets/avatars/female_5_vina.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 1000000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 800000, tenor: 1, barangTerkait: 'lpgGas' },
@@ -155,7 +155,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 4500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_6_gilang.png',
+    avatar: '/assets/avatars/male_6_gilang.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 1000000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 800000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -169,7 +169,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 1200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_7_joko.png',
+    avatar: '/assets/avatars/male_7_joko.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 600000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 1000000, tenor: 1, barangTerkait: 'rice' },
@@ -183,7 +183,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_8_joko.png',
+    avatar: '/assets/avatars/male_8_joko.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 800000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 500000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -197,7 +197,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 1500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_9_bayu.png',
+    avatar: '/assets/avatars/male_9_bayu.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 500000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 600000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -211,7 +211,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_10_agus.png',
+    avatar: '/assets/avatars/male_10_agus.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 900000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 1000000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -225,7 +225,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 2000000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_6_zahra.png',
+    avatar: '/assets/avatars/female_6_zahra.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 500000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 1000000, tenor: 1, barangTerkait: 'rice' },
@@ -239,7 +239,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 1500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_7_siska.png',
+    avatar: '/assets/avatars/female_7_siska.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 1000000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 1000000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -253,7 +253,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_11_eko.png',
+    avatar: '/assets/avatars/male_11_eko.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 800000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 600000, tenor: 1, barangTerkait: 'rice' },
@@ -267,7 +267,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 1200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_8_sari.png',
+    avatar: '/assets/avatars/female_8_sari.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 800000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 700000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -281,7 +281,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2000000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_12_surya.png',
+    avatar: '/assets/avatars/male_12_surya.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 700000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 700000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -295,7 +295,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 1700000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_13_dimas.png',
+    avatar: '/assets/avatars/male_13_dimas.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 1000000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 500000, tenor: 1, barangTerkait: 'rice' },
@@ -309,7 +309,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 2200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_9_indah.png',
+    avatar: '/assets/avatars/female_9_indah.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 600000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 800000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -323,7 +323,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 1200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_10_ratna.png',
+    avatar: '/assets/avatars/female_10_ratna.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 1000000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 800000, tenor: 1, barangTerkait: 'lpgGas' },
@@ -337,7 +337,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 1700000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_11_mega.png',
+    avatar: '/assets/avatars/female_11_mega.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 500000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 700000, tenor: 1, barangTerkait: 'rice' },
@@ -351,7 +351,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 1700000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_12_zahra.png',
+    avatar: '/assets/avatars/female_12_zahra.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 800000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 500000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -365,7 +365,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 1500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_14_rangga.png',
+    avatar: '/assets/avatars/male_14_rangga.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 900000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 1000000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -379,7 +379,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 2500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_13_lia.png',
+    avatar: '/assets/avatars/female_13_lia.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 1000000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 600000, tenor: 1, barangTerkait: 'rice' },
@@ -393,7 +393,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_15_fajar.png',
+    avatar: '/assets/avatars/male_15_fajar.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 900000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 500000, tenor: 1, barangTerkait: 'lpgGas' },
@@ -407,7 +407,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 3500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_16_hafiz.png',
+    avatar: '/assets/avatars/male_16_hafiz.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 500000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 1000000, tenor: 1, barangTerkait: 'lpgGas' },
@@ -421,7 +421,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 1500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_14_lia.png',
+    avatar: '/assets/avatars/female_14_lia.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 500000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 600000, tenor: 1, barangTerkait: 'lpgGas' },
@@ -435,7 +435,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_17_bambang.png',
+    avatar: '/assets/avatars/male_17_bambang.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 800000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 800000, tenor: 1, barangTerkait: 'rice' },
@@ -449,7 +449,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 3500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_15_tari.png',
+    avatar: '/assets/avatars/female_15_tari.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 700000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 900000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -463,7 +463,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_18_eko.png',
+    avatar: '/assets/avatars/male_18_eko.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 700000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 600000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -477,7 +477,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 1700000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_16_zahra.png',
+    avatar: '/assets/avatars/female_16_zahra.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 800000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 800000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -491,7 +491,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 1500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_17_rina.png',
+    avatar: '/assets/avatars/female_17_rina.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 800000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 600000, tenor: 1, barangTerkait: 'rice' },
@@ -505,7 +505,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 1700000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_19_rizky.png',
+    avatar: '/assets/avatars/male_19_rizky.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 600000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 900000, tenor: 1, barangTerkait: 'lpgGas' },
@@ -519,7 +519,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 1800000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_20_surya.png',
+    avatar: '/assets/avatars/male_20_surya.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 500000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 700000, tenor: 1, barangTerkait: 'rice' },
@@ -533,7 +533,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 1200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_18_tari.png',
+    avatar: '/assets/avatars/female_18_tari.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 900000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 900000, tenor: 1, barangTerkait: 'lpgGas' },
@@ -547,7 +547,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 2200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_19_putri.png',
+    avatar: '/assets/avatars/female_19_putri.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 700000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 700000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -561,7 +561,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2000000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_21_lukman.png',
+    avatar: '/assets/avatars/male_21_lukman.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 500000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 800000, tenor: 1, barangTerkait: 'rice' },
@@ -575,7 +575,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 1700000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_22_putra.png',
+    avatar: '/assets/avatars/male_22_putra.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 900000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 600000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -589,7 +589,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 3000000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_23_dimas.png',
+    avatar: '/assets/avatars/male_23_dimas.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 800000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 1000000, tenor: 1, barangTerkait: 'rice' },
@@ -603,7 +603,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 2200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_20_ratna.png',
+    avatar: '/assets/avatars/female_20_ratna.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 900000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 500000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -617,7 +617,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_24_agus.png',
+    avatar: '/assets/avatars/male_24_agus.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 600000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 600000, tenor: 1, barangTerkait: 'lpgGas' },
@@ -631,7 +631,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_25_gilang.png',
+    avatar: '/assets/avatars/male_25_gilang.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 600000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 500000, tenor: 1, barangTerkait: 'cookingOil' },
@@ -645,7 +645,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 2000000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_21_rina.png',
+    avatar: '/assets/avatars/female_21_rina.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 800000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 600000, tenor: 1, barangTerkait: 'lpgGas' },
@@ -659,7 +659,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_26_putra.png',
+    avatar: '/assets/avatars/male_26_putra.jpg',
     loanTemplates: [
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 600000, tenor: 1, barangTerkait: 'lpgGas' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 800000, tenor: 1, barangTerkait: 'lpgGas' },
@@ -673,7 +673,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 1500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_27_joko.png',
+    avatar: '/assets/avatars/male_27_joko.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 800000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 900000, tenor: 1, barangTerkait: 'rice' },
@@ -687,7 +687,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Laki-laki',
     pendapatanBulanan: 2200000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/male_28_rangga.png',
+    avatar: '/assets/avatars/male_28_rangga.jpg',
     loanTemplates: [
       { tujuan: 'Meningkatkan produksi beras', jumlah: 700000, tenor: 1, barangTerkait: 'rice' },
       { tujuan: 'Meningkatkan produksi beras', jumlah: 500000, tenor: 1, barangTerkait: 'rice' },
@@ -701,7 +701,7 @@ export const NPC_DATABASE = [
     jenisKelamin: 'Perempuan',
     pendapatanBulanan: 2500000,
     simpananWajib: 50_000,
-    avatar: '/assets/avatars/female_22_rina.png',
+    avatar: '/assets/avatars/female_22_rina.jpg',
     loanTemplates: [
       { tujuan: 'Memperbesar produksi minyak goreng', jumlah: 700000, tenor: 1, barangTerkait: 'cookingOil' },
       { tujuan: 'Menambah armada distribusi gas LPG', jumlah: 500000, tenor: 1, barangTerkait: 'lpgGas' },
