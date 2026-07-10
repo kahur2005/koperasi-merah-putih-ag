@@ -25,7 +25,10 @@ export default function StoryMoment() {
 
   return (
     <div className="story-moment-overlay" role="dialog" aria-modal="true" aria-labelledby="story-moment-title">
-      <article className={`story-moment ${currentStoryMoment.tone || 'normal'}`}>
+      <article
+        key={currentStoryMoment.id || currentStoryMoment.title}
+        className={`story-moment ${currentStoryMoment.tone || 'normal'}`}
+      >
         <div className="story-moment-portrait">
           {currentStoryMoment.avatar ? (
             <img src={currentStoryMoment.avatar} alt="" />

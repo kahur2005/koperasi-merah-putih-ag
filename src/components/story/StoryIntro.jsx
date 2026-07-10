@@ -65,7 +65,7 @@ export default function StoryIntro() {
 
           <div className="story-ledger-content">
             <span className="story-speaker-tab">{beat.speaker}</span>
-            <div className="story-copy">
+            <div key={index} className="story-copy">
               <h1 id="story-title" className="story-title">{beat.title}.</h1>{' '}
               <p className="story-text">{beat.text}</p>
             </div>

@@ -16,6 +16,14 @@ import './index.css';
 const NOTIFICATION_AUTO_CLOSE_MS = 4000;
 const TOKEN_STORAGE_KEY = 'koperasi_auth_token';
 
+function AnimatedPage({ pageKey, variant = 'page', children }) {
+  return (
+    <div key={pageKey} className={`page-transition page-transition-${variant}`}>
+      {children}
+    </div>
+  );
+}
+
 function NotificationToast({ notification, onDismiss }) {
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -246,15 +254,17 @@ export default function App() {
   if (authLoading && appPhase === 'auth') {
     return (
       <div className="app">
-        <main className="auth-shell">
-          <section className="auth-card glass-card">
-            <div className="auth-brand">
-              <span>Koperasi Merah Putih</span>
-              <h1>Memuat Akun</h1>
-              <p>Mengecek sesi login dan autosave.</p>
-            </div>
-          </section>
-        </main>
+        <AnimatedPage pageKey="auth-loading" variant="menu">
+          <main className="auth-shell">
+            <section className="auth-card glass-card">
+              <div className="auth-brand">
+                <span>Koperasi Merah Putih</span>
+                <h1>Memuat Akun</h1>
+                <p>Mengecek sesi login dan autosave.</p>
+              </div>
+            </section>
+          </main>
+        </AnimatedPage>
       </div>
     );
   }
@@ -262,19 +272,21 @@ export default function App() {
   if (appPhase === 'auth') {
     return (
       <div className="app">
-        <AuthScreen
-          mode={authMode}
-          loading={authLoading}
-          googleLoading={googleLoading}
-          googleEnabled={hasFirebaseConfig()}
-          error={authError}
-          onModeChange={(mode) => {
-            setAuthMode(mode);
-            setAuthError('');
-          }}
-          onSubmit={handleAuthSubmit}
-          onGoogleLogin={handleGoogleLogin}
-        />
+        <AnimatedPage pageKey={`auth-${authMode}`} variant="menu">
+          <AuthScreen
+            mode={authMode}
+            loading={authLoading}
+            googleLoading={googleLoading}
+            googleEnabled={hasFirebaseConfig()}
+            error={authError}
+            onModeChange={(mode) => {
+              setAuthMode(mode);
+              setAuthError('');
+            }}
+            onSubmit={handleAuthSubmit}
+            onGoogleLogin={handleGoogleLogin}
+          />
+        </AnimatedPage>
       </div>
     );
   }
@@ -282,15 +294,17 @@ export default function App() {
   if (appPhase === 'gameEntry') {
     return (
       <div className="app">
-        <GameEntryScreen
-          user={user}
-          saves={saves}
-          loading={authLoading}
-          error={entryError}
-          onContinue={handleContinue}
-          onStartNew={handleStartNew}
-          onLogout={handleLogout}
-        />
+        <AnimatedPage pageKey="game-entry" variant="menu">
+          <GameEntryScreen
+            user={user}
+            saves={saves}
+            loading={authLoading}
+            error={entryError}
+            onContinue={handleContinue}
+            onStartNew={handleStartNew}
+            onLogout={handleLogout}
+          />
+        </AnimatedPage>
         {showNewGameConfirm && (
           <ConfirmNewGameModal
             onCancel={() => setShowNewGameConfirm(false)}
@@ -327,7 +341,9 @@ export default function App() {
         />
       )}
 
-      {currentView === 'dashboard' ? <Dashboard /> : <StoreScene />}
+      <AnimatedPage pageKey={`game-${currentView}`} variant={currentView === 'store3d' ? 'store' : 'dashboard'}>
+        {currentView === 'dashboard' ? <Dashboard /> : <StoreScene />}
+      </AnimatedPage>
       {!storyIntroSeen && <StoryIntro />}
       {storyIntroSeen && <StoryMoment />}
 
