@@ -48,7 +48,7 @@ export default function Dashboard() {
         })}
       </div>
 
-      <nav className="right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '21px', alignItems: 'center' }} aria-label="Menu utama">
+      <nav className="right-sidebar" aria-label="Menu utama">
         <button className="retro-image-btn" onClick={() => setActiveModal('museum')} title={UI.MUSEUM}>
           <img src="/assets/images/ui/btn_museum.png" alt="Museum" style={{ width: '90px' }} />
         </button>
