@@ -1,0 +1,110 @@
+export function createPostgresAuthSaveRepository(pool) {
+  return {
+    async findUserByUsername(username) {
+      const result = await pool.query(
+        'select * from app_users where username = $1 limit 1',
+        [username]
+      );
+      return result.rows[0] || null;
+    },
+
+    async findUserById(id) {
+      const result = await pool.query(
+        'select * from app_users where id = $1 limit 1',
+        [id]
+      );
+      return result.rows[0] || null;
+    },
+
+    async findUserByGoogleUid(googleUid) {
+      const result = await pool.query(
+        'select * from app_users where google_uid = $1 limit 1',
+        [googleUid]
+      );
+      return result.rows[0] || null;
+    },
+
+    async createUser({ username, passwordHash, authProvider = 'password', googleUid = null, email = null, displayName = null, avatarUrl = null }) {
+      const result = await pool.query(
+        `insert into app_users (
+           username, password_hash, auth_provider, google_uid, email, display_name, avatar_url
+         )
+         values ($1, $2, $3, $4, $5, $6, $7)
+         returning *`,
+        [username, passwordHash || null, authProvider, googleUid, email, displayName, avatarUrl]
+      );
+      return result.rows[0];
+    },
+
+    async createGoogleUser({ username, googleUid, email, displayName, avatarUrl }) {
+      return this.createUser({
+        username,
+        authProvider: 'google',
+        googleUid,
+        email,
+        displayName,
+        avatarUrl,
+      });
+    },
+
+    async findMainSaveByUserId(userId) {
+      const result = await pool.query(
+        `select * from game_saves
+         where user_id = $1 and save_name = 'Main Save'
+         limit 1`,
+        [userId]
+      );
+      return result.rows[0] || null;
+    },
+
+    async findSavesByUserId(userId) {
+      const result = await pool.query(
+        `select * from game_saves
+         where user_id = $1
+         order by updated_at desc`,
+        [userId]
+      );
+      return result.rows;
+    },
+
+    async upsertSave({ userId, saveName = 'Auto Save', gameState, dayNumber, money, happiness, memberCount }) {
+      const result = await pool.query(
+        `insert into game_saves (
+           user_id, save_name, game_state, day_number, money, happiness, member_count
+         )
+         values ($1, $2, $3::jsonb, $4, $5, $6, $7)
+         on conflict (user_id, save_name)
+         do update set
+           game_state = excluded.game_state,
+           day_number = excluded.day_number,
+           money = excluded.money,
+           happiness = excluded.happiness,
+           member_count = excluded.member_count,
+           updated_at = now()
+         returning *`,
+        [userId, saveName, JSON.stringify(gameState), dayNumber, money, happiness, memberCount]
+      );
+      return result.rows[0];
+    },
+
+    async deleteMainSave(userId) {
+      await pool.query(
+        `delete from game_saves
+         where user_id = $1 and save_name = 'Main Save'`,
+        [userId]
+      );
+    },
+
+    async upsertMainSave(payload) {
+      return this.upsertSave({ ...payload, saveName: 'Main Save' });
+    },
+
+    async deleteSave(userId, saveName = 'Auto Save') {
+      await pool.query(
+        `delete from game_saves
+         where user_id = $1 and save_name = $2`,
+        [userId, saveName]
+      );
+    },
+  };
+}
