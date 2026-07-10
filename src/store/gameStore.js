@@ -15,6 +15,7 @@ import {
 import { NPC_DATABASE } from '../data/npcData.js';
 import { randomInt, pickRandom, shuffleArray, seededRandom } from '../utils/random.js';
 import { clampStorePosition } from '../utils/storeBounds.js';
+import { createGameLoadPatch, createGameSaveSnapshot } from '../utils/gameSaveAdapter.js';
 
 // ─── Helper: clamp happiness between 0 and 100 ────────────────────────────────
 const clamp = (val, min = 0, max = 100) => Math.max(min, Math.min(max, val));
@@ -187,6 +188,7 @@ export const useGameStore = create((set, get) => ({
           : 'Pasokan sudah siap. Kamu bisa masuk ke toko 3D untuk melayani warga langsung, atau memakai simulasi harian dari layar utama.',
         avatar: '/assets/avatars/female_1_siti.jpg',
         actionLabel: 'Mainkan 3D',
+        actionView: 'store3d',
         actionEvent: 'startManagerMode',
       });
       const queuedMoments = [...(firstMoment ? pendingMoments : []), managerPrompt];
@@ -1524,6 +1526,15 @@ export const useGameStore = create((set, get) => ({
 
   /** 18. resetGame */
   resetGame: () => set(() => createInitialState()),
+
+  /** 18b. startNewGame */
+  startNewGame: () => set(() => createInitialState()),
+
+  /** 18c. exportGameStateForSave */
+  exportGameStateForSave: () => createGameSaveSnapshot(get()),
+
+  /** 18d. loadGameStateFromSave */
+  loadGameStateFromSave: (savedState) => set(() => createGameLoadPatch(savedState)),
 
   /** 19. moveFurniture */
   moveFurniture: (id, dx, dy) =>

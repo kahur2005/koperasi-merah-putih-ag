@@ -1,0 +1,65 @@
+import crypto from 'node:crypto';
+
+export function createMemoryAuthSaveRepository() {
+  const repository = {
+    users: [],
+    saves: [],
+
+    async findUserByUsername(username) {
+      return repository.users.find((user) => user.username === username) || null;
+    },
+
+    async findUserById(id) {
+      return repository.users.find((user) => user.id === id) || null;
+    },
+
+    async createUser({ username, passwordHash }) {
+      const user = {
+        id: crypto.randomUUID(),
+        username,
+        password_hash: passwordHash,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      repository.users.push(user);
+      return user;
+    },
+
+    async findMainSaveByUserId(userId) {
+      return repository.saves.find((save) => save.user_id === userId && save.save_name === 'Main Save') || null;
+    },
+
+    async upsertMainSave({ userId, gameState, dayNumber, money, happiness, memberCount }) {
+      const existingSave = await repository.findMainSaveByUserId(userId);
+      const payload = {
+        game_state: gameState,
+        day_number: dayNumber,
+        money,
+        happiness,
+        member_count: memberCount,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (existingSave) {
+        Object.assign(existingSave, payload);
+        return existingSave;
+      }
+
+      const save = {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        save_name: 'Main Save',
+        created_at: new Date().toISOString(),
+        ...payload,
+      };
+      repository.saves.push(save);
+      return save;
+    },
+
+    async deleteMainSave(userId) {
+      repository.saves = repository.saves.filter((save) => !(save.user_id === userId && save.save_name === 'Main Save'));
+    },
+  };
+
+  return repository;
+}
