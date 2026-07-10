@@ -1095,7 +1095,15 @@ export const useGameStore = create((set, get) => ({
         });
       } else if (newPendingApplications.length > state.pendingApplications.length) {
         const applicant = newPendingApplications[newPendingApplications.length - 1];
-        storyPatch = storyMomentPatch(state, `application_${state.dayNumber}`, {
+        const introPatch = storyMomentPatch(state, `application_intro_${state.dayNumber}`, {
+          speaker: 'Bu Siti',
+          title: 'Ada warga ingin bergabung',
+          text: `${displayName(applicant)} datang mengajukan diri sebagai anggota koperasi. Tinjau dulu profilnya sebelum diterima, karena anggota baru akan ikut menyetor simpanan dan bisa mengajukan pinjaman.`,
+          avatar: '/assets/avatars/female_1_siti.jpg',
+          actionLabel: 'Lanjut',
+          actionModal: null,
+        });
+        storyPatch = storyMomentPatch({ ...state, ...introPatch }, `application_${state.dayNumber}`, {
           speaker: displayName(applicant),
           title: 'Calon anggota menunggu',
           text: 'Saya ingin ikut koperasi supaya simpanan dan kebutuhan usaha lebih jelas. Mohon ditinjau, Pengurus.',

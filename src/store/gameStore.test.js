@@ -100,3 +100,16 @@ test('endDay closes the store and startNewDay enters the restock phase', () => {
   useGameStore.getState().openStoreForDay();
   assert.equal(useGameStore.getState().gamePhase, 'storeOpen');
 });
+
+test('startNewDay introduces new applicants with a Bu Siti tutorial card first', () => {
+  resetTo();
+
+  useGameStore.getState().startNewDay();
+
+  const state = useGameStore.getState();
+  assert.equal(state.currentStoryMoment.speaker, 'Bu Siti');
+  assert.equal(state.currentStoryMoment.title, 'Ada warga ingin bergabung');
+  assert.equal(state.storyQueue.length, 1);
+  assert.equal(state.storyQueue[0].title, 'Calon anggota menunggu');
+  assert.notEqual(state.storyQueue[0].speaker, 'Bu Siti');
+});
