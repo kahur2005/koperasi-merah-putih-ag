@@ -1,8 +1,9 @@
 import React from 'react';
 import { useGameStore } from '../../store/gameStore';
-import { UI } from '../../constants/uiStrings';
 import { formatRupiah } from '../../utils/formatRupiah';
 import TopBar from '../hud/TopBar';
+import MissionLedger from '../hud/MissionLedger';
+import DashboardBottomLedger from '../hud/DashboardBottomLedger';
 import PanelAnggota from '../hud/PanelAnggota';
 import PanelPinjaman from '../hud/PanelPinjaman';
 import PasarPasokan from '../hud/PasarPasokan';
@@ -11,40 +12,14 @@ import PanelKalender from '../hud/PanelKalender';
 import LaporanHarian from '../hud/LaporanHarian';
 import BagiHasil from '../hud/BagiHasil';
 import PanelMuseum from '../hud/PanelMuseum';
-import AdvisoryMemo from '../hud/AdvisoryMemo';
-import ChapterProgress from '../hud/ChapterProgress';
-import dayjs from 'dayjs';
 
 export default function Dashboard() {
-  const dayNumber = useGameStore((s) => s.dayNumber);
-  const currentDate = useGameStore((s) => s.currentDate);
   const activeModal = useGameStore((s) => s.activeModal);
-  const pendingApplications = useGameStore((s) => s.pendingApplications);
-  const pendingLoanRequests = useGameStore((s) => s.pendingLoanRequests);
   const activeEvents = useGameStore((s) => s.activeEvents);
   const setView = useGameStore((s) => s.setView);
   const setActiveModal = useGameStore((s) => s.setActiveModal);
-  const setSelectedNpc = useGameStore((s) => s.setSelectedNpc);
-  const setSelectedLoan = useGameStore((s) => s.setSelectedLoan);
-  const endDay = useGameStore((s) => s.endDay);
   const resetGame = useGameStore((s) => s.resetGame);
   const gameResult = useGameStore((s) => s.gameResult);
-  const activeLoans = useGameStore((s) => s.activeLoans);
-
-  const dateObj = dayjs(currentDate);
-  const monthName = UI.BULAN_NAMES[dateObj.month()];
-
-  const handleSelectNpc = (npc) => {
-    setSelectedNpc(npc);
-    setActiveModal('anggotaDetail');
-  };
-
-  const handleSelectLoan = (loan) => {
-    setSelectedLoan(loan);
-    setActiveModal('pinjamanDetail');
-  };
-
-  const getPersonName = (person) => person?.nama || person?.name || person?.memberName || person?.namaAnggota || 'Warga Desa';
 
   return (
     <div 
@@ -85,69 +60,9 @@ export default function Dashboard() {
       </nav>
 
 
-      <ChapterProgress />
-      <AdvisoryMemo />
-
-      <div className="bottom-bar glass-card">
-        <div className="bottom-section">
-          <span className="bottom-section-title">{UI.PINJAMAN}</span>
-          <div className="bottom-cards-scroll">
-            {pendingLoanRequests.length === 0 ? (
-              <span className="empty-state">Tidak ada pengajuan pinjaman</span>
-            ) : (
-              pendingLoanRequests.map((loan) => (
-                <button key={loan.id} className="bottom-card" onClick={() => handleSelectLoan(loan)}>
-                  <img src={loan.avatar} alt={loan.namaAnggota} className="bottom-card-avatar" />
-                  <div className="bottom-card-info">
-                    <span className="bottom-card-name">{getPersonName(loan)}</span>
-                    <span className="bottom-card-subtitle">{formatRupiah(loan.jumlahPinjaman)}</span>
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="bottom-section">
-          <span className="bottom-section-title">{UI.PENDAFTARAN_ANGGOTA}</span>
-          <div className="bottom-cards-scroll">
-            {pendingApplications.length === 0 ? (
-              <span className="empty-state">Tidak ada pendaftaran baru</span>
-            ) : (
-              pendingApplications.map((npc) => (
-                <button key={npc.id} className="bottom-card" onClick={() => handleSelectNpc(npc)}>
-                  <img src={npc.avatar} alt={npc.name} className="bottom-card-avatar" />
-                  <div className="bottom-card-info">
-                    <span className="bottom-card-name">{getPersonName(npc)}</span>
-                    <span className="bottom-card-subtitle">{npc.pekerjaan}</span>
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="quick-actions">
-          <button className="bottom-card calendar-pill" onClick={() => setActiveModal('kalender')}>
-            <span className="calendar-month">{monthName.substring(0, 3)}</span>
-            <span className="calendar-day">{dateObj.date()}</span>
-            <span className="calendar-year">{dateObj.year()}</span>
-          </button>
-          <button 
-            className="sidebar-btn" 
-            onClick={() => setActiveModal('pinjamanAktifList')}
-            title="Pinjaman dan anggota"
-          >
-            <span style={{ fontSize: '26px' }}>👥</span>
-            <span style={{ fontSize: '13px' }}>Pinjaman/Anggota</span>
-          </button>
-        </div>
-
-        <button className="btn btn-primary btn-endday" onClick={endDay}>
-          <span>{UI.AKHIRI_HARI}</span>
-          <span className="endday-subtitle">Simulasikan Penjualan</span>
-        </button>
-      </div>
+      <MissionLedger />
+      <button className="dashboard-store-hotspot" onClick={() => setView('store3d')} aria-label="Masuk Toko" />
+      <DashboardBottomLedger />
 
       {activeModal === 'anggotaDetail' && <PanelAnggota />}
       {activeModal === 'pinjamanDetail' && <PanelPinjaman />}
