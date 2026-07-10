@@ -12,14 +12,9 @@ function formatGoalValue(goal, value) {
 
 export default function MissionLedger() {
   const snapshot = useGameStore((state) => state);
-  const setActiveModal = useGameStore((state) => state.setActiveModal);
   const chapterProgress = getChapterProgress(snapshot);
   const { activeChapter, nextGoal, chapters } = chapterProgress;
   const advisory = getDashboardAdvisory(snapshot, chapterProgress);
-
-  const handleAdvisoryAction = () => {
-    if (advisory.actionType !== 'store3d') setActiveModal(advisory.actionType);
-  };
 
   return (
     <section className="mission-ledger" aria-label="Misi cerita koperasi">
@@ -56,9 +51,6 @@ export default function MissionLedger() {
         <span className="mission-ledger-advisory-kicker">Catatan Pengurus</span>
         <h3>{advisory.title}</h3>
         <p>{advisory.body}</p>
-        {advisory.actionType !== 'store3d' && (
-          <button className="btn btn-primary" onClick={handleAdvisoryAction}>{advisory.action}</button>
-        )}
       </div>
     </section>
   );
