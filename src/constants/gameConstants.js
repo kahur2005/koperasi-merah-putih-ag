@@ -13,7 +13,7 @@ export const GAME = {
 export const MEMBERS = {
   MAX_APPLICATIONS_PER_DAY: 5,
   MONTHLY_SAVING: 50_000,
-  TOTAL_NPC_COUNT: 8,
+  TOTAL_NPC_COUNT: 50,
 };
 
 export const LOANS = {
@@ -98,6 +98,6 @@ export const EVENTS = {
 
 export const WIN_CONDITIONS = {
   MONEY: 10_000_000,
-  MEMBERS: 8,
+  MEMBERS: 50,
   HAPPINESS: 60,
 };

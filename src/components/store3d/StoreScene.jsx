@@ -24,10 +24,11 @@ const MANAGER_ITEM_LABELS = {
 function ManagerModeOverlay() {
   const managerSession = useGameStore((s) => s.managerSession);
   const finishManagerMode = useGameStore((s) => s.finishManagerMode);
+  const beginManagerTimer = useGameStore((s) => s.beginManagerTimer);
   const [secondsLeft, setSecondsLeft] = useState(managerSession?.durationSeconds || 60);
 
   useEffect(() => {
-    if (!managerSession) return undefined;
+    if (!managerSession || managerSession.status !== 'playing') return undefined;
 
     const updateTimer = () => {
       const elapsed = Math.floor((Date.now() - managerSession.startedAt) / 1000);
@@ -52,30 +53,85 @@ function ManagerModeOverlay() {
 
   if (!managerSession) return null;
 
+  if (managerSession.status === 'intro') {
+    return (
+      <div className="modal-overlay" style={{ zIndex: 9999 }}>
+        <div className="modal-content glass-card" style={{ maxWidth: '600px', textAlign: 'center', padding: '40px' }}>
+          <h2 style={{ fontSize: '32px', marginBottom: '24px', color: 'var(--accent-yellow)' }}>Simulasi 3D Koperasi</h2>
+          <p style={{ fontSize: '20px', margin: '20px 0', lineHeight: '1.6', color: 'var(--ink)' }}>
+            Pelanggan akan datang satu per satu meminta barang. 
+            Tugas Anda adalah <strong>mengklik rak yang benar</strong> (Beras, Minyak Goreng, atau Gas LPG) 
+            sesuai permintaan pelanggan secepat mungkin sebelum waktu habis!
+          </p>
+          <p style={{ fontSize: '18px', marginBottom: '32px', color: 'var(--accent-red)' }}>
+            Waktu: {managerSession.durationSeconds} Detik
+          </p>
+          <button className="btn btn-primary" onClick={beginManagerTimer} style={{ fontSize: '22px', padding: '12px 32px' }}>
+            Mulai Sekarang
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const request = managerSession.customerQueue[managerSession.currentIndex];
+  
+  // Determine background color based on feedback
+  let feedbackBg = 'rgba(36, 26, 16, 0.9)'; // default dark brown
+  if (managerSession.feedback) {
+    if (managerSession.feedback.startsWith('Benar')) {
+      feedbackBg = 'rgba(34, 197, 94, 0.95)'; // Green
+    } else if (managerSession.feedback.startsWith('Bukan itu') || managerSession.feedback.includes('habis')) {
+      feedbackBg = 'rgba(239, 68, 68, 0.95)'; // Red
+    }
+  }
 
   return (
-    <div className="manager-mode-hud" role="status">
-      <div>
-        <span className="manager-kicker">Manager Mode</span>
-        <strong>{secondsLeft}s</strong>
-      </div>
-      <p>
+    <>
+      <div style={{
+        position: 'absolute',
+        top: '40px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        padding: '20px 40px',
+        backgroundColor: feedbackBg,
+        color: 'white',
+        fontSize: '28px',
+        fontWeight: 'bold',
+        borderRadius: '12px',
+        boxShadow: '0 8px 16px rgba(0,0,0,0.4)',
+        zIndex: 1000,
+        textAlign: 'center',
+        border: '3px solid rgba(255,255,255,0.2)',
+        transition: 'background-color 0.3s ease',
+        minWidth: '400px'
+      }}>
         {request
-          ? `Pelanggan meminta ${MANAGER_ITEM_LABELS[request.item] || request.item}. Klik rak/barang yang benar.`
-          : 'Semua pelanggan sudah dilayani.'}
-      </p>
-      <div className="manager-stats">
-        <span>{managerSession.currentIndex}/{managerSession.totalCustomers}</span>
-        <span>Benar {managerSession.served}</span>
-        <span>Salah {managerSession.wrong}</span>
-        <span>Lewat {managerSession.missed}</span>
+          ? `Klik Rak: ${MANAGER_ITEM_LABELS[request.item]?.toUpperCase() || request.item}`
+          : 'Selesai!'}
+        {managerSession.feedback && (
+          <div style={{ fontSize: '18px', marginTop: '8px', fontWeight: 'normal', opacity: 0.9 }}>
+            {managerSession.feedback}
+          </div>
+        )}
       </div>
-      {managerSession.feedback && <small>{managerSession.feedback}</small>}
-      <button className="btn btn-primary" onClick={finishManagerMode}>
-        Akhiri Sesi
-      </button>
-    </div>
+
+      <div className="manager-mode-hud" role="status">
+        <div>
+          <span className="manager-kicker">Manager Mode</span>
+          <strong>{secondsLeft}s</strong>
+        </div>
+        <div className="manager-stats">
+          <span>{managerSession.currentIndex}/{managerSession.totalCustomers}</span>
+          <span>Benar {managerSession.served}</span>
+          <span>Salah {managerSession.wrong}</span>
+          <span>Lewat {managerSession.missed}</span>
+        </div>
+        <button className="btn btn-primary" onClick={finishManagerMode}>
+          Akhiri Sesi
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -91,24 +147,47 @@ export default function StoreScene() {
   const setFurniturePosition = useGameStore((s) => s.setFurniturePosition);
   const gamePhase = useGameStore((s) => s.gamePhase);
   const serveManagerCustomer = useGameStore((s) => s.serveManagerCustomer);
+  const startRelocation = useGameStore((s) => s.startRelocation);
 
   const storeSize = useGameStore((s) => s.storeSize);
   const updatePlacement = useGameStore((s) => s.updatePlacement);
 
   const [selectedId, setSelectedId] = useState(null);
   const [ghostPlacement, setGhostPlacement] = useState({ x: 50, y: 50, rot: 0 });
+  const [rackFlash, setRackFlash] = useState({ id: null, color: null });
 
   const handleFurnitureClick = (id) => {
     if (placementMode) return;
     if (gamePhase === 'managerMode') {
       const clickedItem = furniturePositions.find((f) => f.id === id);
       const requestedItem = MANAGER_ITEM_BY_FURNITURE[clickedItem?.type];
-      if (requestedItem) {
-        serveManagerCustomer(requestedItem);
+      
+      const managerSession = useGameStore.getState().managerSession;
+      if (managerSession && managerSession.status === 'playing') {
+        const currentRequest = managerSession.customerQueue[managerSession.currentIndex];
+        
+        if (requestedItem) {
+          const isCorrect = currentRequest && currentRequest.item === requestedItem;
+          setRackFlash({ id, color: isCorrect ? 'green' : 'red' });
+          
+          if (isCorrect) {
+            setTimeout(() => setRackFlash({ id: null, color: null }), 500);
+            serveManagerCustomer(requestedItem);
+          }
+        } else {
+          setRackFlash({ id, color: 'red' });
+        }
       }
       return;
     }
     setSelectedId(id);
+  };
+
+  const handleFurnitureDoubleClick = (id, e) => {
+    if (placementMode) return;
+    if (gamePhase === 'managerMode') return;
+    startRelocation(id);
+    setSelectedId(null);
   };
 
   const getSnappedPosition = (point, type = placementMode?.type) => {
@@ -127,17 +206,18 @@ export default function StoreScene() {
       const minD = Math.min(dBack, dFront, dLeft, dRight);
       
       let rot = 0;
+      const wallOffset = 0.28; // Wall is 0.5 thick (0.25 inner surface) + frame is 0.05 thick (0.025 to center) = ~0.275
       if (minD === dBack) {
-        zWorld = -depth / 2 + 0.1;
+        zWorld = -depth / 2 + wallOffset;
         rot = 0;
       } else if (minD === dFront) {
-        zWorld = depth / 2 - 0.1;
+        zWorld = depth / 2 - wallOffset;
         rot = 180;
       } else if (minD === dLeft) {
-        xWorld = -width / 2 + 0.1;
+        xWorld = -width / 2 + wallOffset;
         rot = 90;
       } else if (minD === dRight) {
-        xWorld = width / 2 - 0.1;
+        xWorld = width / 2 - wallOffset;
         rot = -90;
         // Avoid door area on right wall
         if (zWorld > -3 && zWorld < 3) {
@@ -274,68 +354,72 @@ export default function StoreScene() {
           shadows
           onDoubleClick={handleFloorDoubleClick}
         >
-          <color attach="background" args={['#fdd798']} />
-          
-          {/* Lighting */}
-          <ambientLight intensity={0.75} />
-          <directionalLight 
-            position={[8, 12, 5]} 
-            intensity={1.35} 
-            castShadow 
-            shadow-mapSize={[1024, 1024]}
-          />
-          <directionalLight position={[-8, 6, -5]} intensity={0.5} />
-
-          {/* Controls */}
-          <OrbitControls 
-            enableDamping
-            dampingFactor={0.05}
-            maxPolarAngle={Math.PI / 2.1} // Prevent going under floor
-            minDistance={5}
-            maxDistance={40}
-          />
-
-          {/* Floor & walls */}
-          <StoreFloor 
-            onPointerMove={handleFloorPointerMove}
-            onClick={handleFloorClick}
-            onDoubleClick={handleFloorDoubleClick}
-          />
-
-          {/* Placement Ghost */}
-          {placementMode && (
-            <Furniture 
-              id="ghost"
-              type={placementMode.type}
-              x={ghostPlacement.x}
-              y={ghostPlacement.y}
-              rotation={isWallFurniture(placementMode.type) ? ghostPlacement.rot : placementMode.rotation}
-              color={placementMode.color}
-              isGhost={true}
-              onClick={() => {}}
+          <React.Suspense fallback={null}>
+            <color attach="background" args={['#fdd798']} />
+            
+            {/* Lighting */}
+            <ambientLight intensity={0.75} />
+            <directionalLight 
+              position={[8, 12, 5]} 
+              intensity={1.35} 
+              castShadow 
+              shadow-mapSize={[1024, 1024]}
             />
-          )}
+            <directionalLight position={[-8, 6, -5]} intensity={0.5} />
 
-          {/* Furniture items */}
-          {furniturePositions.map((f) => (
-            <Furniture 
-              key={f.id} 
-              id={f.id}
-              type={f.type}
-              x={f.x}
-              y={f.y}
-              rotation={f.rotation}
-              color={f.color}
-              isSelected={selectedId === f.id}
-              onClick={handleFurnitureClick}
+            {/* Controls */}
+            <OrbitControls 
+              enableDamping
+              dampingFactor={0.05}
+              maxPolarAngle={Math.PI / 2.1} // Prevent going under floor
+              minDistance={5}
+              maxDistance={40}
             />
-          ))}
+
+            {/* Floor & walls */}
+            <StoreFloor 
+              onPointerMove={handleFloorPointerMove}
+              onClick={handleFloorClick}
+              onDoubleClick={handleFloorDoubleClick}
+            />
+
+            {/* Placement Ghost */}
+            {placementMode && (
+              <Furniture 
+                id="ghost"
+                type={placementMode.type}
+                x={ghostPlacement.x}
+                y={ghostPlacement.y}
+                rotation={isWallFurniture(placementMode.type) ? ghostPlacement.rot : placementMode.rotation}
+                color={placementMode.color}
+                isGhost={true}
+                onClick={() => {}}
+              />
+            )}
+
+            {/* Furniture items */}
+            {furniturePositions.map((f) => (
+              <Furniture 
+                key={f.id} 
+                id={f.id}
+                type={f.type}
+                x={f.x}
+                y={f.y}
+                rotation={f.rotation}
+                color={f.color}
+                isSelected={selectedId === f.id}
+                flashColor={rackFlash.id === f.id ? rackFlash.color : null}
+                onClick={handleFurnitureClick}
+                onDoubleClick={handleFurnitureDoubleClick}
+              />
+            ))}
+          </React.Suspense>
         </Canvas>
       </div>
 
       {/* HTML overlay sidebar */}
       {gamePhase === 'managerMode' && <ManagerModeOverlay />}
-      {gamePhase !== 'managerMode' && <TokoFurnitur selectedId={selectedId} setSelectedId={setSelectedId} />}
+      {gamePhase !== 'managerMode' && <TokoFurnitur selectedId={selectedId} setSelectedId={setSelectedId} onConfirmPlacement={confirmGhostPlacement} />}
       {activeModal === 'pasar' && <PasarPasokan />}
     </div>
   );

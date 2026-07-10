@@ -89,7 +89,7 @@ export default function PanelKalender() {
       <div className="modal-content planner-modal" onClick={(event) => event.stopPropagation()}>
         <div className="modal-header">
           <div>
-            <span className="panel-kicker">Buku Kerja Pengurus</span>
+            <span className="panel-kicker" style={{ color: 'black' }}>Buku Kerja Pengurus</span>
             <h2>{UI.KALENDER_ACARA}</h2>
           </div>
           <button className="modal-close" onClick={handleClose}>&times;</button>

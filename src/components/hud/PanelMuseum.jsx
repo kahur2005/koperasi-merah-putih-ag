@@ -1,23 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useGameStore } from '../../store/gameStore';
-import { MUSEUM_TABS, MUSEUM_CONTENT } from '../../data/museumContent';
+import { MUSEUM_CONTENT } from '../../data/museumContent';
 import { UI } from '../../constants/uiStrings';
 
 export default function PanelMuseum() {
   const setActiveModal = useGameStore((s) => s.setActiveModal);
-  const [activeTab, setActiveTab] = useState(MUSEUM_TABS[0].id);
   const [activeIdx, setActiveIdx] = useState(0);
-
-  // Reset slide index when changing tabs
-  useEffect(() => {
-    setActiveIdx(0);
-  }, [activeTab]);
 
   const handleClose = () => {
     setActiveModal(null);
   };
 
-  const content = MUSEUM_CONTENT[activeTab];
+  const content = MUSEUM_CONTENT['history'];
   const numSlides = content.sections.length;
 
   const handlePrev = () => {
@@ -33,107 +27,64 @@ export default function PanelMuseum() {
   return (
     <div className="modal-overlay" onClick={handleClose} style={{ zIndex: 9999 }}>
       <div 
-        className="modal-content glass-card" 
-        style={{ 
-          maxWidth: '800px', 
-          width: '90%', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          padding: '0',
-          overflow: 'hidden'
-        }}
-        onClick={(e) => e.stopPropagation()}
+        className="modal-content glass-card modal-wide" 
+        onClick={(e) => e.stopPropagation()} 
+        style={{ maxWidth: '900px', width: '95%', maxHeight: '95vh', overflowY: 'auto' }}
       >
-        {/* Browser-like Window Header & Tabs */}
-        <div style={{ background: 'var(--wood-dark)', display: 'flex', flexDirection: 'column' }}>
-          {/* Top Window Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px' }}>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '0', background: '#ff5f56' }} onClick={handleClose} cursor="pointer" />
-              <div style={{ width: '12px', height: '12px', borderRadius: '0', background: '#ffbd2e' }} />
-              <div style={{ width: '12px', height: '12px', borderRadius: '0', background: '#27c93f' }} />
-            </div>
-            <h2 style={{ fontSize: '18px', margin: 0, fontWeight: '600', color: 'var(--ink-inverse)' }}>🏛 {UI.MUSEUM_TITLE || 'Museum Koperasi'}</h2>
-            <div style={{ width: '44px' }}></div> {/* Spacer for centering */}
-          </div>
-
-          {/* Browser Tabs */}
-          <div style={{ display: 'flex', padding: '8px 16px 0 16px', gap: '5px', overflowX: 'auto' }}>
-            {MUSEUM_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  padding: '10px 20px',
-                  background: activeTab === tab.id ? 'var(--paper)' : 'var(--wood-mid)',
-                  border: 'none',
-                  borderRadius: '0',
-                  color: activeTab === tab.id ? 'var(--ink)' : 'var(--ink-inverse)',
-                  fontWeight: activeTab === tab.id ? '700' : '500',
-                  fontSize: '18px',
-                  cursor: 'pointer',
-                  borderTop: activeTab === tab.id ? '3px solid var(--accent-green)' : '3px solid transparent',
-                  boxShadow: 'none',
-                  transition: 'none',
-                  outline: 'none',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
+        <div className="modal-header">
+          <h2 style={{ letterSpacing: '2px' }}>{UI.MUSEUM_TITLE || 'Museum Koperasi'}</h2>
+          <button className="modal-close" onClick={handleClose}>&times;</button>
         </div>
 
-        {/* Content Area with Carousel */}
-        <div style={{ padding: '31px', background: 'var(--paper)', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
-          <h1 style={{ fontSize: '31px', fontWeight: '800', marginBottom: '16px', color: 'var(--accent-yellow)', textAlign: 'center' }}>
-            {content.title}
-          </h1>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingTop: '12px' }}>
           
-          <div className="carousel-container" style={{ flex: 1 }}>
-            <button className="carousel-arrow" onClick={handlePrev}>&larr;</button>
-
-            <div className="carousel-slide" style={{ padding: '0', background: 'transparent', border: 'none', display: 'flex', flexDirection: 'column', gap: '26px' }}>
-              {/* Image for the current section */}
-              <div style={{ width: '100%', height: '200px', borderRadius: '0', overflow: 'hidden', border: '3px solid var(--wood-dark)' }}>
-                <img src={currentSlide.image || content.image} alt={content.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-
-              {/* Text for the current section */}
-              <div style={{ background: 'var(--paper-2)', padding: '26px', borderRadius: '0', border: '3px solid var(--wood-dark)' }}>
-                <h3 style={{ fontSize: '26px', fontWeight: '800', marginBottom: '12px', color: 'var(--accent-green)' }}>
-                  {currentSlide.subtitle}
-                </h3>
-                <p style={{ fontSize: '20px', color: 'var(--ink)', lineHeight: '1.7', whiteSpace: 'pre-line' }}>
-                  {currentSlide.text}
-                </p>
-              </div>
-            </div>
-
-            <button className="carousel-arrow" onClick={handleNext}>&rarr;</button>
+          {/* Carousel Navigation Top */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button className="btn btn-primary" onClick={handlePrev} style={{ padding: '8px 16px' }}>&larr; Prev</button>
+            <h3 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--accent-yellow)', margin: 0, textAlign: 'center' }}>
+              {currentSlide.subtitle}
+            </h3>
+            <button className="btn btn-primary" onClick={handleNext} style={{ padding: '8px 16px' }}>Next &rarr;</button>
           </div>
 
-          {/* Page / Dot Indicators */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
+            {/* Image */}
+            <div style={{ width: '100%', maxWidth: '700px', height: '350px', borderRadius: '8px', overflow: 'hidden', border: '4px solid var(--wood-dark)', flexShrink: 0 }}>
+              <img src={currentSlide.image} alt={currentSlide.subtitle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            {/* Text description */}
+            <div style={{ width: '100%', maxWidth: '700px', background: 'var(--paper-2)', padding: '24px', borderRadius: '8px', border: '3px solid var(--wood-dark)' }}>
+              <p style={{ fontSize: '20px', color: 'var(--ink)', lineHeight: '1.7', whiteSpace: 'pre-line', margin: 0 }}>
+                {currentSlide.text}
+              </p>
+            </div>
+          </div>
+
+          {/* Page Indicators */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '8px' }}>
             <span style={{ fontSize: '16px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
               Halaman {activeIdx + 1} dari {numSlides}
             </span>
-            <div className="carousel-dots">
+            <div className="carousel-dots" style={{ display: 'flex' }}>
               {content.sections.map((_, idx) => (
                 <div 
                   key={idx} 
                   className={`carousel-dot ${activeIdx === idx ? 'active' : ''}`}
                   onClick={() => setActiveIdx(idx)}
-                  style={{ width: '10px', height: '10px', margin: '0 6px', cursor: 'pointer' }}
+                  style={{ 
+                    width: '12px', 
+                    height: '12px', 
+                    margin: '0 6px', 
+                    cursor: 'pointer', 
+                    borderRadius: '50%', 
+                    background: activeIdx === idx ? 'var(--accent-green)' : 'var(--wood-dark)' 
+                  }}
                 ></div>
               ))}
             </div>
           </div>
+
         </div>
       </div>
     </div>

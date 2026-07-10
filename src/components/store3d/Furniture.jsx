@@ -3,9 +3,11 @@ import { useLoader } from '@react-three/fiber';
 import { TextureLoader } from 'three';
 import { useGameStore } from '../../store/gameStore';
 
-const RiceRack = ({ isSelected, customColor, isGhost }) => {
+const RiceRack = ({ isSelected, customColor, isGhost, flashColor }) => {
   const rackColor = customColor || '#854D0E';
-  const rackMaterial = <meshStandardMaterial color={rackColor} roughness={0.8} emissive={isSelected ? '#3B82F6' : '#000000'} emissiveIntensity={isSelected ? 0.3 : 0} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
+  const emissiveColor = flashColor === 'green' ? '#22C55E' : flashColor === 'red' ? '#EF4444' : isSelected ? '#3B82F6' : '#000000';
+  const emissiveIntensity = flashColor ? 0.8 : isSelected ? 0.3 : 0;
+  const rackMaterial = <meshStandardMaterial color={rackColor} roughness={0.8} emissive={emissiveColor} emissiveIntensity={emissiveIntensity} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
   const sackMaterial = <meshStandardMaterial color="#E5E7EB" roughness={0.9} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
   return (
     <group>
@@ -39,9 +41,11 @@ const RiceRack = ({ isSelected, customColor, isGhost }) => {
   );
 };
 
-const OilRack = ({ isSelected, customColor, isGhost }) => {
+const OilRack = ({ isSelected, customColor, isGhost, flashColor }) => {
   const rackColor = customColor || '#D97706';
-  const rackMaterial = <meshStandardMaterial color={rackColor} roughness={0.7} emissive={isSelected ? '#3B82F6' : '#000000'} emissiveIntensity={isSelected ? 0.3 : 0} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
+  const emissiveColor = flashColor === 'green' ? '#22C55E' : flashColor === 'red' ? '#EF4444' : isSelected ? '#3B82F6' : '#000000';
+  const emissiveIntensity = flashColor ? 0.8 : isSelected ? 0.3 : 0;
+  const rackMaterial = <meshStandardMaterial color={rackColor} roughness={0.7} emissive={emissiveColor} emissiveIntensity={emissiveIntensity} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
   const bottleMaterial = <meshStandardMaterial color="#FCD34D" roughness={0.2} transparent opacity={isGhost ? 0.4 : 0.8} />;
   const capMaterial = <meshStandardMaterial color="#EF4444" roughness={0.5} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
   return (
@@ -82,9 +86,11 @@ const OilRack = ({ isSelected, customColor, isGhost }) => {
   );
 };
 
-const GoodsRack = ({ isSelected, customColor, isGhost }) => {
+const GoodsRack = ({ isSelected, customColor, isGhost, flashColor }) => {
   const rackColor = customColor || '#64748B';
-  const rackMaterial = <meshStandardMaterial color={rackColor} roughness={0.6} metalness={0.2} emissive={isSelected ? '#3B82F6' : '#000000'} emissiveIntensity={isSelected ? 0.3 : 0} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
+  const emissiveColor = flashColor === 'green' ? '#22C55E' : flashColor === 'red' ? '#EF4444' : isSelected ? '#3B82F6' : '#000000';
+  const emissiveIntensity = flashColor ? 0.8 : isSelected ? 0.3 : 0;
+  const rackMaterial = <meshStandardMaterial color={rackColor} roughness={0.6} metalness={0.2} emissive={emissiveColor} emissiveIntensity={emissiveIntensity} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
   const boxColors = ['#F87171', '#60A5FA', '#34D399', '#FBBF24'];
   return (
     <group>
@@ -114,9 +120,11 @@ const GoodsRack = ({ isSelected, customColor, isGhost }) => {
   );
 };
 
-const LpgStack = ({ isSelected, customColor, isGhost }) => {
-  const rackMaterial = <meshStandardMaterial color={customColor || '#334155'} roughness={0.7} emissive={isSelected ? '#3B82F6' : '#000000'} emissiveIntensity={isSelected ? 0.3 : 0} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
-  const lpgMaterial = <meshStandardMaterial color="#22C55E" roughness={0.6} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
+const LpgStack = ({ isSelected, customColor, isGhost, flashColor }) => {
+  const emissiveColor = flashColor === 'green' ? '#22C55E' : flashColor === 'red' ? '#EF4444' : isSelected ? '#3B82F6' : '#000000';
+  const emissiveIntensity = flashColor ? 0.8 : isSelected ? 0.3 : 0;
+  const rackMaterial = <meshStandardMaterial color={customColor || '#334155'} roughness={0.7} emissive={emissiveColor} emissiveIntensity={emissiveIntensity} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
+  const lpgMaterial = <meshStandardMaterial color="#22C55E" roughness={0.6} emissive={emissiveColor} emissiveIntensity={emissiveIntensity} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
   const capMaterial = <meshStandardMaterial color="#64748B" roughness={0.5} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
   const palletMaterial = <meshStandardMaterial color="#B45309" roughness={0.9} transparent={isGhost} opacity={isGhost ? 0.5 : 1} />;
 
@@ -265,7 +273,7 @@ const PictureFrame = ({ type, isSelected, customColor, isGhost }) => {
   );
 };
 
-export default function Furniture({ id, type, x, y, rotation = 0, color, isSelected, isGhost, onClick }) {
+export default function Furniture({ id, type, x, y, rotation = 0, color, isSelected, isGhost, flashColor, onClick, onDoubleClick }) {
   const posX = (x - 50) / 10;
   const posZ = (y - 50) / 10;
   let posY = 0;
@@ -276,10 +284,10 @@ export default function Furniture({ id, type, x, y, rotation = 0, color, isSelec
 
   const renderModel = () => {
     switch (type) {
-      case 'riceRack': return <RiceRack isSelected={isSelected} customColor={color} isGhost={isGhost} />;
-      case 'oilRack': return <OilRack isSelected={isSelected} customColor={color} isGhost={isGhost} />;
-      case 'goodsRack': return <GoodsRack isSelected={isSelected} customColor={color} isGhost={isGhost} />;
-      case 'lpgStack': return <LpgStack isSelected={isSelected} customColor={color} isGhost={isGhost} />;
+      case 'riceRack': return <RiceRack isSelected={isSelected} customColor={color} isGhost={isGhost} flashColor={flashColor} />;
+      case 'oilRack': return <OilRack isSelected={isSelected} customColor={color} isGhost={isGhost} flashColor={flashColor} />;
+      case 'goodsRack': return <GoodsRack isSelected={isSelected} customColor={color} isGhost={isGhost} flashColor={flashColor} />;
+      case 'lpgStack': return <LpgStack isSelected={isSelected} customColor={color} isGhost={isGhost} flashColor={flashColor} />;
       case 'cashier': return <CashierDesk isSelected={isSelected} customColor={color} isGhost={isGhost} />;
       case 'carpet': return <Carpet isSelected={isSelected} customColor={color} isGhost={isGhost} />;
       case 'indoorPlant': return <IndoorPlant isSelected={isSelected} customColor={color} isGhost={isGhost} />;
@@ -300,8 +308,16 @@ export default function Furniture({ id, type, x, y, rotation = 0, color, isSelec
       position={[posX, posY, posZ]} 
       rotation={[0, (rotation * Math.PI) / 180, 0]}
       onClick={(e) => {
-        e.stopPropagation();
-        if (onClick) onClick(id);
+        if (!isGhost && onClick) {
+          e.stopPropagation();
+          onClick(id);
+        }
+      }}
+      onDoubleClick={(e) => {
+        if (!isGhost && onDoubleClick) {
+          e.stopPropagation();
+          onDoubleClick(id, e);
+        }
       }}
     >
       {renderModel()}

@@ -6,6 +6,7 @@ export default function StoryMoment() {
   const dismissStoryMoment = useGameStore((state) => state.dismissStoryMoment);
   const setActiveModal = useGameStore((state) => state.setActiveModal);
   const setView = useGameStore((state) => state.setView);
+  const startManagerMode = useGameStore((state) => state.startManagerMode);
 
   if (!currentStoryMoment) return null;
 
@@ -15,6 +16,9 @@ export default function StoryMoment() {
     }
     if (currentStoryMoment.actionModal) {
       setActiveModal(currentStoryMoment.actionModal);
+    }
+    if (currentStoryMoment.actionEvent === 'startManagerMode') {
+      startManagerMode();
     }
     dismissStoryMoment();
   };
@@ -39,7 +43,7 @@ export default function StoryMoment() {
             <button className="btn btn-secondary" onClick={dismissStoryMoment}>
               Nanti
             </button>
-            {(currentStoryMoment.actionLabel || currentStoryMoment.actionModal || currentStoryMoment.actionView) && (
+            {(currentStoryMoment.actionLabel || currentStoryMoment.actionModal || currentStoryMoment.actionView || currentStoryMoment.actionEvent) && (
               <button className="btn btn-primary" onClick={handleAction}>
                 {currentStoryMoment.actionLabel || 'Lanjut'}
               </button>

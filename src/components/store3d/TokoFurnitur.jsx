@@ -23,7 +23,7 @@ const RESTOCK_ITEM_BY_FURNITURE = {
   lpgStack: 'lpgGas',
 };
 
-export default function TokoFurnitur({ selectedId, setSelectedId }) {
+export default function TokoFurnitur({ selectedId, setSelectedId, onConfirmPlacement }) {
   const money = useGameStore((s) => s.money);
   const furniture = useGameStore((s) => s.furniture);
   const storeSize = useGameStore((s) => s.storeSize);
@@ -200,6 +200,9 @@ export default function TokoFurnitur({ selectedId, setSelectedId }) {
         <div className="floating-action-bar">
           <h3>Penempatan: {FURNITURE[placementMode.type]?.label}</h3>
           <div className="tool-row" style={{ alignItems: 'center' }}>
+            <button className="btn btn-primary" onClick={onConfirmPlacement} style={{ fontSize: '16px', padding: '8px 16px' }}>
+              Letakkan
+            </button>
             <button className="btn btn-secondary" onClick={() => updatePlacement({ rotation: (placementMode.rotation + 90) % 360 })}>
               Putar
             </button>
@@ -225,12 +228,6 @@ export default function TokoFurnitur({ selectedId, setSelectedId }) {
         <div className="floating-action-bar">
           <h3>Pilihan: {FURNITURE[selectedItem.type]?.label || selectedItem.type}</h3>
           <div className="tool-row" style={{ alignItems: 'center' }}>
-            <div className="move-pad" style={{ display: 'flex', gap: '4px', margin: '0 8px' }}>
-              <button className="btn btn-secondary" onClick={() => handleMove(0, -5)} title="Geser maju">▲</button>
-              <button className="btn btn-secondary" onClick={() => handleMove(-5, 0)} title="Geser kiri">◀</button>
-              <button className="btn btn-secondary" onClick={() => handleMove(5, 0)} title="Geser kanan">▶</button>
-              <button className="btn btn-secondary" onClick={() => handleMove(0, 5)} title="Geser mundur">▼</button>
-            </div>
             <button className="btn btn-secondary" onClick={handleRotate}>
               Putar
             </button>

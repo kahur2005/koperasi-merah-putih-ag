@@ -109,7 +109,7 @@ export default function PasarPasokan() {
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content glass-card modal-wide" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content glass-card modal-wide" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '900px', maxHeight: '95vh' }}>
         <div className="modal-header">
           <h2>{UI.PASAR_PASOKAN}</h2>
           <button className="modal-close" onClick={handleClose}>&times;</button>
@@ -123,13 +123,13 @@ export default function PasarPasokan() {
 
         <div className="tab-row" style={{ marginBottom: '12px' }}>
           <button
-            className={`tab-btn ${buyMode === 'manual' ? 'active' : ''}`}
+            className={`tab-btn tab-mode ${buyMode === 'manual' ? 'active' : ''}`}
             onClick={() => { setBuyMode('manual'); setErrorMsg(''); }}
           >
             Manual
           </button>
           <button
-            className={`tab-btn ${buyMode === 'automatic' ? 'active' : ''}`}
+            className={`tab-btn tab-mode ${buyMode === 'automatic' ? 'active' : ''}`}
             onClick={() => { setBuyMode('automatic'); setErrorMsg(''); }}
           >
             Otomatis Penuh

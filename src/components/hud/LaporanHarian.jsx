@@ -27,7 +27,7 @@ export default function LaporanHarian() {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content glass-card" style={{ maxWidth: '440px', padding: '31px' }}>
+      <div className="modal-content glass-card" style={{ maxWidth: '650px', padding: '31px' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <h2 style={{ fontSize: '31px', fontWeight: '800', letterSpacing: '0.5px' }}>📋 {UI.LAPORAN_HARIAN}</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '17px', marginTop: '4px' }}>
@@ -42,24 +42,33 @@ export default function LaporanHarian() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
             {/* Rice */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px' }}>
-              <span>🍚 {UI.BERAS}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <img src="/assets/images/icon_beras.png" alt="Beras" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+                {UI.BERAS}
+              </span>
               <span style={{ fontWeight: '600' }}>
                 {dayReport.salesBreakdown.rice.sold} &times; {formatRupiah(sellingPrices.rice)} = {formatRupiah(dayReport.salesBreakdown.rice.revenue)}
               </span>
             </div>
 
             {/* Oil */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px' }}>
-              <span>🛢 {UI.MINYAK_GORENG}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <img src="/assets/images/icon_minyak.png" alt="Minyak Goreng" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+                {UI.MINYAK_GORENG}
+              </span>
               <span style={{ fontWeight: '600' }}>
                 {dayReport.salesBreakdown.cookingOil.sold} &times; {formatRupiah(sellingPrices.cookingOil)} = {formatRupiah(dayReport.salesBreakdown.cookingOil.revenue)}
               </span>
             </div>
 
             {/* Gas */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px' }}>
-              <span>⛽ {UI.GAS_LPG}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <img src="/assets/images/icon_gas.png" alt="Gas LPG" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+                {UI.GAS_LPG}
+              </span>
               <span style={{ fontWeight: '600' }}>
                 {dayReport.salesBreakdown.lpgGas.sold} &times; {formatRupiah(sellingPrices.lpgGas)} = {formatRupiah(dayReport.salesBreakdown.lpgGas.revenue)}
               </span>

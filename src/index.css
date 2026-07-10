@@ -464,6 +464,7 @@ input:focus-visible {
 .tab-btn.active { color: #fff; text-shadow: 1px 1px 0 rgba(0,0,0,0.4); }
 .tab-btn.active.tab-pt { background: var(--accent-blue); }
 .tab-btn.active.tab-umkm { background: var(--accent-orange); }
+.tab-btn.active.tab-mode { background: var(--accent-green); }
 
 .info-note {
   padding: 13px 12px;
@@ -873,6 +874,17 @@ input:focus-visible {
   border-color: var(--accent-gold);
 }
 
+/* Hide number input spinners */
+input[type="number"].no-spinner::-webkit-inner-spin-button, 
+input[type="number"].no-spinner::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}
+input[type="number"].no-spinner {
+    -moz-appearance: textfield; /* Firefox */
+}
+
+
 /* 3D View Specific styling */
 .three-container {
   width: 100%;
@@ -1183,7 +1195,7 @@ input:focus-visible {
   top: 115px;
   left: 22px;
   z-index: 90;
-  width: 320px;
+  width: 360px;
   max-height: calc(100vh - 292px);
   overflow: auto;
   padding: 30px 30px 22px;
@@ -1196,21 +1208,21 @@ input:focus-visible {
 .mission-ledger-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .mission-ledger-heading img { display: none; }
 .mission-ledger-kicker,
-.mission-ledger-advisory-kicker { display: block; color: #8d2b26; font-size: 11px; text-transform: uppercase; }
-.mission-ledger h2 { margin: 4px 0 5px; font-size: 17px; line-height: 1.15; }
-.mission-ledger-summary { font-size: 12px; line-height: 1.35; }
+.mission-ledger-advisory-kicker { display: block; color: #8d2b26; font-size: 13px; text-transform: uppercase; }
+.mission-ledger h2 { margin: 4px 0 5px; font-size: 19px; line-height: 1.15; }
+.mission-ledger-summary { font-size: 14px; line-height: 1.35; }
 .mission-ledger-progress { height: 9px; margin: 10px 0; border: 2px solid #5a3821; background: #d4bd88; }
 .mission-ledger-progress span { display: block; height: 100%; background: #8da044; }
 .mission-ledger-goals { display: grid; gap: 6px; }
 .mission-ledger-goal,
-.mission-ledger-next { display: flex; justify-content: space-between; gap: 8px; padding: 6px 7px; border: 2px solid #b89359; background: #ead5a4; font-size: 11px; }
+.mission-ledger-next { display: flex; justify-content: space-between; gap: 8px; padding: 6px 7px; border: 2px solid #b89359; background: #ead5a4; font-size: 13px; }
 .mission-ledger-goal strong,
 .mission-ledger-next strong { text-align: right; white-space: nowrap; }
 .mission-ledger-goal.is-complete { background: #d5dfaa; }
 .mission-ledger-next { margin-top: 7px; }
 .mission-ledger-advisory { margin-top: 12px; padding-top: 11px; border-top: 2px solid #c4a168; }
-.mission-ledger-advisory h3 { margin: 5px 0; font-size: 15px; }
-.mission-ledger-advisory p { font-size: 12px; line-height: 1.35; }
+.mission-ledger-advisory h3 { margin: 5px 0; font-size: 17px; }
+.mission-ledger-advisory p { font-size: 14px; line-height: 1.35; }
 
 .right-sidebar {
   position: absolute;

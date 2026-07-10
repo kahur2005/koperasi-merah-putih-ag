@@ -52,13 +52,13 @@ export default function Dashboard() {
 
       <nav className="right-sidebar" aria-label="Menu utama">
         <button className="retro-image-btn" onClick={() => setActiveModal('museum')} title={UI.MUSEUM}>
-          <img src="/assets/images/ui/btn_museum.png" alt="Museum" style={{ width: '90px' }} />
+          <img src="/assets/images/ui/btn_museum.png" alt="Museum" style={{ width: '110px' }} />
         </button>
         <button className="retro-image-btn" onClick={() => openRestockPanel()} title={UI.PASAR}>
-          <img src="/assets/images/ui/btn_pasar.png" alt="Pasar" style={{ width: '90px' }} />
+          <img src="/assets/images/ui/btn_pasar.png" alt="Pasar" style={{ width: '110px' }} />
         </button>
         <button className="retro-image-btn" onClick={() => setActiveModal('harga')} title={UI.HARGA}>
-          <img src="/assets/images/ui/btn_harga.png" alt="Harga" style={{ width: '90px' }} />
+          <img src="/assets/images/ui/btn_harga.png" alt="Harga" style={{ width: '110px' }} />
         </button>
       </nav>
 

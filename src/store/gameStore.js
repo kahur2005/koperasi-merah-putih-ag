@@ -186,8 +186,8 @@ export const useGameStore = create((set, get) => ({
           ? 'Setelah restok, coba masuk ke toko 3D dan layani warga langsung sebagai pengelola. Kalau ingin cepat, hari berikutnya kamu juga bisa memakai simulasi.'
           : 'Pasokan sudah siap. Kamu bisa masuk ke toko 3D untuk melayani warga langsung, atau memakai simulasi harian dari layar utama.',
         avatar: '/assets/avatars/female_1_siti.jpg',
-        actionLabel: 'Masuk Toko 3D',
-        actionView: 'store3d',
+        actionLabel: 'Mainkan 3D',
+        actionEvent: 'startManagerMode',
       });
       const queuedMoments = [...(firstMoment ? pendingMoments : []), managerPrompt];
       const [nextMoment, ...remainingQueuedMoments] = queuedMoments;
@@ -306,6 +306,7 @@ export const useGameStore = create((set, get) => ({
       const newLoanSchedule = [...state.loanSchedule, scheduledLoan];
 
       return {
+        money: state.money + (npc.simpananWajib || 50000),
         members: newMembers,
         pendingApplications: newPending,
         memberCount: newMemberCount,
@@ -313,7 +314,7 @@ export const useGameStore = create((set, get) => ({
         loanSchedule: newLoanSchedule,
         notifications: [
           ...state.notifications,
-          { id: uid(), text: `${displayName(npc)} telah diterima sebagai anggota koperasi!` },
+          { id: uid(), text: `${displayName(npc)} telah diterima sebagai anggota koperasi dan menyetor simpanan awal!` },
         ],
         ...storyMomentPatch(state, `member_${newMemberCount}`, {
           speaker: displayName(npc),
@@ -587,7 +588,8 @@ export const useGameStore = create((set, get) => ({
         currentStoryMoment: null,
         storyQueue: state.storyQueue,
         managerSession: {
-          startedAt: Date.now(),
+          status: 'intro',
+          startedAt: null,
           durationSeconds: 60,
           totalCustomers,
           customerQueue,
@@ -599,6 +601,19 @@ export const useGameStore = create((set, get) => ({
           feedback: '',
           salesBreakdown: createEmptySalesBreakdown(),
           applicantsGenerated: 0,
+        },
+      };
+    }),
+
+  /** 12c-2. beginManagerTimer */
+  beginManagerTimer: () =>
+    set((state) => {
+      if (state.gamePhase !== 'managerMode' || !state.managerSession) return {};
+      return {
+        managerSession: {
+          ...state.managerSession,
+          status: 'playing',
+          startedAt: Date.now(),
         },
       };
     }),
@@ -681,6 +696,22 @@ export const useGameStore = create((set, get) => ({
       };
     }),
 
+  /** 13a-2. startRelocation */
+  startRelocation: (id) =>
+    set((state) => {
+      const item = state.furniturePositions.find((f) => f.id === id);
+      if (!item) return {};
+      return {
+        placementMode: {
+          type: item.type,
+          rotation: item.rotation,
+          color: item.color,
+          price: 0,
+          existingId: id,
+        },
+      };
+    }),
+
   /** 13b. updatePlacement */
   updatePlacement: (updates) =>
     set((state) => {
@@ -697,7 +728,21 @@ export const useGameStore = create((set, get) => ({
   confirmPlacement: (x, y) =>
     set((state) => {
       if (!state.placementMode) return {};
-      const { type, rotation, color, price } = state.placementMode;
+      const { type, rotation, color, price, existingId } = state.placementMode;
+
+      if (existingId) {
+        // Relocation mode
+        const newPositions = state.furniturePositions.map(f => 
+          f.id === existingId 
+            ? { ...f, ...clampStorePosition({ x, y }, state.storeSize, type), rotation, color }
+            : f
+        );
+        return {
+          furniturePositions: newPositions,
+          placementMode: null,
+        };
+      }
+
       const def = FURNITURE[type];
 
       if (state.money < price) return {};
@@ -1112,16 +1157,9 @@ export const useGameStore = create((set, get) => ({
         });
       }
 
-      if (isFirstOfMonth && state.memberCount > 0 && state.gamePhase !== 'monthlyMeeting') {
-        // Monthly savings are now decided by the player in the monthly meeting.
-      } else if (isFirstOfMonth && state.memberCount > 0) {
-        // Collect savings: money += memberCount * MEMBERS.MONTHLY_SAVING
-        const savings = state.memberCount * (MEMBERS.MONTHLY_SAVING || 50000);
-        money += savings;
-        monthlyNotifications.push({
-          id: uid(),
-          text: `Simpanan bulanan terkumpul: Rp ${savings.toLocaleString('id-ID')} dari ${state.memberCount} anggota.`,
-        });
+      if (isFirstOfMonth && state.memberCount > 0) {
+        // Note: Monthly savings collection is handled inside chooseMonthlyPayment via the Monthly Meeting.
+        // We only process loan repayments here at the start of the month.
 
         // Process loan repayments
         const stillActive = [];
