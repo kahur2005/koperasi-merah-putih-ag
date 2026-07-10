@@ -85,3 +85,25 @@ test('getDashboardAdvisory prioritizes active restock phase', () => {
     actionType: 'pasar',
   });
 });
+
+test('getDashboardAdvisory guides setup and ready-to-open phases', () => {
+  assert.deepEqual(getDashboardAdvisory({
+    ...baseState,
+    gamePhase: 'setupStore',
+  }), {
+    title: 'Susun toko koperasi',
+    body: 'Masuk ke toko 3D, pasang minimal satu kasir dan satu rak sebelum membeli stok pertama.',
+    action: 'Masuk Toko',
+    actionType: 'store3d',
+  });
+
+  assert.deepEqual(getDashboardAdvisory({
+    ...baseState,
+    gamePhase: 'readyToOpen',
+  }), {
+    title: 'Toko siap dibuka',
+    body: 'Pilih Mainkan 3D untuk melayani pelanggan langsung, atau Simulasi Hari untuk menjalankan penjualan otomatis.',
+    action: 'Mainkan 3D',
+    actionType: 'store3d',
+  });
+});
