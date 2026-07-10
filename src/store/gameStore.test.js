@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { useGameStore } from './gameStore.js';
 import { NPC_DATABASE } from '../data/npcData.js';
+import { setSeed } from '../utils/random.js';
 
 const resetTo = (patch = {}) => {
   useGameStore.getState().resetGame();
@@ -104,6 +105,7 @@ test('endDay closes the store and startNewDay enters the restock phase', () => {
 });
 
 test('startNewDay shows restock narrative before deferring new applicant cards until the store opens', () => {
+  setSeed(1);
   resetTo({
     pendingApplications: NPC_DATABASE.slice(1),
   });
@@ -126,6 +128,23 @@ test('startNewDay shows restock narrative before deferring new applicant cards u
   assert.equal(state.storyQueue.length, 1);
   assert.equal(state.storyQueue[0].title, 'Calon anggota menunggu');
   assert.equal(state.pendingMorningStoryMoments.length, 0);
+});
+
+test('startNewDay summarizes multiple new applicants into one narrative pair', () => {
+  setSeed(1);
+  resetTo();
+
+  useGameStore.getState().startNewDay();
+
+  const state = useGameStore.getState();
+  const applicationCards = state.pendingMorningStoryMoments.filter((moment) =>
+    moment.id.startsWith('application_')
+  );
+  assert.equal(state.pendingApplications.length > 1, true);
+  assert.equal(applicationCards.length, 2);
+  assert.equal(applicationCards[0].title, 'Ada warga ingin bergabung');
+  assert.match(applicationCards[0].text, /warga lain juga menunggu/);
+  assert.equal(applicationCards[1].title, 'Calon anggota menunggu');
 });
 
 test('startNewDay builds narrative cards from every generated morning event', () => {

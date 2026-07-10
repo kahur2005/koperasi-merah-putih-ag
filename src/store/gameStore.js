@@ -869,13 +869,14 @@ export const useGameStore = create((set, get) => ({
         ...state.pendingApplications,
         ...newApplicants,
       ];
-      newApplicants.forEach((applicant) => {
+      if (newApplicants.length > 0) {
         morningStoryEvents.push({
           type: 'memberApplication',
           dayNumber: state.dayNumber,
-          applicant,
+          applicant: newApplicants[0],
+          totalApplicants: newApplicants.length,
         });
-      });
+      }
 
       // ── d. Check loanSchedule for today's loan requests ──
       let newPendingLoanRequests = [...state.pendingLoanRequests];
@@ -1458,10 +1459,14 @@ function buildMorningStoryMoments(storyEvents) {
         actionModal: 'pinjamanAktifList',
       }));
     } else if (event.type === 'memberApplication') {
+      const extraApplicants = Math.max(0, (event.totalApplicants || 1) - 1);
+      const extraText = extraApplicants > 0
+        ? ` dan ${extraApplicants} warga lain juga menunggu di daftar calon anggota`
+        : '';
       moments.push(createStoryMoment(`application_intro_${event.dayNumber}_${event.applicant.id}`, {
         speaker: 'Bu Siti',
         title: 'Ada warga ingin bergabung',
-        text: `${displayName(event.applicant)} datang mengajukan diri sebagai anggota koperasi. Tinjau dulu profilnya sebelum diterima, karena anggota baru akan ikut menyetor simpanan dan bisa mengajukan pinjaman.`,
+        text: `${displayName(event.applicant)} datang mengajukan diri sebagai anggota koperasi${extraText}. Tinjau profil calon anggota sebelum diterima, karena anggota baru akan ikut menyetor simpanan dan bisa mengajukan pinjaman.`,
         avatar: '/assets/avatars/female_1_siti.jpg',
         actionLabel: 'Lanjut',
         actionModal: null,
