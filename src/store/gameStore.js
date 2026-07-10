@@ -1118,8 +1118,6 @@ export const useGameStore = create((set, get) => ({
         text: 'Toko sudah tutup. Sebelum hari baru dibuka, isi kembali beras, minyak, dan gas LPG lewat pembelian manual atau otomatis agar warga tidak kecewa besok.',
         avatar: '/assets/avatars/female_1_siti.jpg',
         tone: 'success',
-        actionLabel: 'Buka Pasar',
-        actionModal: 'pasar',
       });
 
       // Clean up expired events

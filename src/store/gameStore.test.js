@@ -115,6 +115,8 @@ test('startNewDay shows restock narrative before deferring new applicant cards u
   let state = useGameStore.getState();
   assert.equal(state.currentStoryMoment.speaker, 'Bu Siti');
   assert.equal(state.currentStoryMoment.title, 'Waktunya restok pasokan');
+  assert.equal(state.currentStoryMoment.actionLabel, undefined);
+  assert.equal(state.currentStoryMoment.actionModal, undefined);
   assert.equal(state.storyQueue.length, 0);
   assert.equal(state.pendingMorningStoryMoments.length, 2);
   assert.equal(state.pendingMorningStoryMoments[0].title, 'Ada warga ingin bergabung');
