@@ -65,6 +65,9 @@ const createInitialState = () => ({
   members: [],
   pendingApplications: [],
 
+  // Phase Transition
+  phaseTransition: null,
+
   // Inventory
   stock: { ...GAME.STARTING_STOCK }, // { rice: 20, cookingOil: 20, lpgGas: 20 }
   stockCapacity: { rice: 0, cookingOil: 0, lpgGas: 0 },
@@ -144,6 +147,12 @@ export const useGameStore = create((set, get) => ({
   // ╔═══════════════════════════════════════════════════════════════════════════╗
   // ║  1-6 — UI / Navigation Actions                                          ║
   // ╚═══════════════════════════════════════════════════════════════════════════╝
+
+  triggerPhaseTransition: (text, onMiddleAction) =>
+    set({ phaseTransition: { text, onMiddleAction } }),
+
+  clearPhaseTransition: () =>
+    set({ phaseTransition: null }),
 
   /** 1. setView */
   setView: (view) => set({ currentView: view }),

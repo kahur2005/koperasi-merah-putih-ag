@@ -17,6 +17,7 @@ export default function DashboardBottomLedger() {
   const setSelectedNpc = useGameStore((state) => state.setSelectedNpc);
   const setSelectedLoan = useGameStore((state) => state.setSelectedLoan);
   const endDay = useGameStore((state) => state.endDay);
+  const triggerPhaseTransition = useGameStore((state) => state.triggerPhaseTransition);
   const dateObj = dayjs(currentDate);
   const monthName = UI.BULAN_NAMES[dateObj.month()];
 
@@ -65,7 +66,7 @@ export default function DashboardBottomLedger() {
         </button>
       </div>
 
-      <button className="btn btn-primary btn-endday" onClick={endDay} disabled={gamePhase !== 'storeOpen'}>
+      <button className="btn btn-primary btn-endday" onClick={() => triggerPhaseTransition('FASE JUAL', endDay)} disabled={gamePhase !== 'storeOpen'}>
         <span>{gamePhase === 'storeOpen' ? UI.AKHIRI_HARI : 'Toko Belum Dibuka'}</span>
         <span className="endday-subtitle">{gamePhase === 'storeOpen' ? 'Simulasikan Penjualan' : 'Selesaikan restok dulu'}</span>
       </button>

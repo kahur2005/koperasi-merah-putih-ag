@@ -8,11 +8,13 @@ export default function LaporanHarian() {
   const dayReport = useGameStore((s) => s.dayReport);
   const sellingPrices = useGameStore((s) => s.sellingPrices);
   const startNewDay = useGameStore((s) => s.startNewDay);
+  const setActiveModal = useGameStore((s) => s.setActiveModal);
+  const triggerPhaseTransition = useGameStore((s) => s.triggerPhaseTransition);
 
   if (!dayReport) return null;
 
   const handleNextDay = () => {
-    startNewDay();
+    triggerPhaseTransition('HARI BERIKUTNYA', startNewDay);
   };
 
   const current = dayjs(dayReport.date);

@@ -4,6 +4,7 @@ import Dashboard from './components/dashboard/Dashboard';
 import StoreScene from './components/store3d/StoreScene';
 import StoryIntro from './components/story/StoryIntro';
 import StoryMoment from './components/story/StoryMoment';
+import PhaseTransition from './components/hud/PhaseTransition';
 import './index.css';
 
 const NOTIFICATION_AUTO_CLOSE_MS = 4000;
@@ -42,6 +43,8 @@ export default function App() {
       {currentView === 'dashboard' ? <Dashboard /> : <StoreScene />}
       {!storyIntroSeen && <StoryIntro />}
       {storyIntroSeen && <StoryMoment />}
+
+      <PhaseTransition />
 
       {/* Global Notifications Toast Container */}
       <div className="notifications-container">
