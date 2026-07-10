@@ -377,3 +377,26 @@ test('monthly payment presets affect money happiness and high payment can remove
   assert.equal(state.happiness, 40);
   assert.equal(state.memberCount <= members.length, true);
 });
+
+test('invalid money inputs cannot corrupt cash into NaN', () => {
+  resetTo({
+    gamePhase: 'storeOpen',
+    money: 1_000_000,
+    happiness: 50,
+    memberCount: 2,
+    stock: { rice: 2, cookingOil: 0, lpgGas: 0 },
+    stockCapacity: { rice: 10, cookingOil: 0, lpgGas: 0 },
+    furniture: { riceRack: 1, oilRack: 0, goodsRack: 0, lpgStack: 0, cashier: 1, carpet: 0, indoorPlant: 0, prabowoPicture: 0 },
+    pendingLoanRequests: [{ id: 'bad-loan', jumlahPinjaman: undefined }],
+  });
+
+  useGameStore.getState().processBagiHasil(undefined);
+  assert.equal(Number.isFinite(useGameStore.getState().money), true);
+
+  useGameStore.getState().approveLoan('bad-loan');
+  assert.equal(Number.isFinite(useGameStore.getState().money), true);
+
+  useGameStore.getState().setSellingPrice('rice', Number.NaN);
+  useGameStore.getState().endDay();
+  assert.equal(Number.isFinite(useGameStore.getState().money), true);
+});

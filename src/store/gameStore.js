@@ -334,6 +334,7 @@ export const useGameStore = create((set, get) => ({
     set((state) => {
       const loanReq = state.pendingLoanRequests.find((l) => l.id === loanId);
       if (!loanReq) return {};
+      if (!Number.isFinite(loanReq.jumlahPinjaman) || loanReq.jumlahPinjaman <= 0) return {};
       if (state.money < loanReq.jumlahPinjaman) return {}; // Saldo tidak cukup
 
       // Interest is fixed at 6% p.a., tenor is 1 month. Total repayment = Pokok + (Pokok * 0.005)
@@ -523,9 +524,14 @@ export const useGameStore = create((set, get) => ({
 
   /** 12. setSellingPrice */
   setSellingPrice: (item, price) =>
-    set((state) => ({
-      sellingPrices: { ...state.sellingPrices, [item]: price },
-    })),
+    set((state) => {
+      if (!state.sellingPrices[item] && state.sellingPrices[item] !== 0) return {};
+      if (!Number.isFinite(price) || price < 0) return {};
+
+      return {
+        sellingPrices: { ...state.sellingPrices, [item]: price },
+      };
+    }),
 
   /** 12b. startSalesSimulation */
   startSalesSimulation: () => {
@@ -1432,6 +1438,7 @@ export const useGameStore = create((set, get) => ({
   /** 17. processBagiHasil */
   processBagiHasil: (percent) =>
     set((state) => {
+      if (!Number.isFinite(percent)) return {};
       const monthlySaving = MEMBERS.MONTHLY_SAVING || 50000;
       const cost = Math.round((percent / 100) * monthlySaving * state.memberCount);
 
