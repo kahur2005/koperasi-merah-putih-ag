@@ -104,7 +104,7 @@ export default function StoreScene() {
           onClick={handleFloorClick}
           onDoubleClick={handleFloorDoubleClick}
         >
-          <color attach="background" args={['#eef4e8']} />
+          <color attach="background" args={['#fdd798']} />
           
           {/* Lighting */}
           <ambientLight intensity={0.75} />
