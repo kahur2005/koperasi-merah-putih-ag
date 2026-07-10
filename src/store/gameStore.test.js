@@ -124,3 +124,19 @@ test('startNewDay shows restock narrative before deferring new applicant cards u
   assert.equal(state.storyQueue[0].title, 'Calon anggota menunggu');
   assert.equal(state.pendingMorningStoryMoments.length, 0);
 });
+
+test('setFurniturePosition moves selected furniture with store bounds and rotation', () => {
+  resetTo({
+    storeSize: 'small',
+    furniturePositions: [
+      { id: 'item-1', type: 'cashier', x: 50, y: 50, rotation: 0, color: '#B45309' },
+    ],
+  });
+
+  useGameStore.getState().setFurniturePosition('item-1', 150, -20, 90);
+
+  const item = useGameStore.getState().furniturePositions[0];
+  assert.equal(item.x, 100);
+  assert.equal(item.y, 0);
+  assert.equal(item.rotation, 90);
+});

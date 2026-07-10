@@ -16,6 +16,13 @@ const FURNITURE_IMAGES = {
   gibranPicture: '/assets/images/furniture/foto_wapres_peview.jpeg',
 };
 
+const RESTOCK_ITEM_BY_FURNITURE = {
+  riceRack: 'rice',
+  oilRack: 'cookingOil',
+  goodsRack: 'rice',
+  lpgStack: 'lpgGas',
+};
+
 export default function TokoFurnitur({ selectedId, setSelectedId }) {
   const money = useGameStore((s) => s.money);
   const furniture = useGameStore((s) => s.furniture);
@@ -27,6 +34,7 @@ export default function TokoFurnitur({ selectedId, setSelectedId }) {
   const updatePlacement = useGameStore((s) => s.updatePlacement);
   const cancelPlacement = useGameStore((s) => s.cancelPlacement);
   const changeFurnitureColor = useGameStore((s) => s.changeFurnitureColor);
+  const openRestockPanel = useGameStore((s) => s.openRestockPanel);
 
   const upgradeStore = useGameStore((s) => s.upgradeStore);
   const moveFurniture = useGameStore((s) => s.moveFurniture);
@@ -65,6 +73,12 @@ export default function TokoFurnitur({ selectedId, setSelectedId }) {
   const handleRotate = () => {
     if (!selectedId) return;
     rotateFurniture(selectedId);
+  };
+
+  const handleRestock = () => {
+    const item = RESTOCK_ITEM_BY_FURNITURE[selectedItem?.type];
+    if (!item) return;
+    openRestockPanel(item);
   };
 
   const handleDelete = () => {
@@ -220,6 +234,11 @@ export default function TokoFurnitur({ selectedId, setSelectedId }) {
             <button className="btn btn-secondary" onClick={handleRotate}>
               Putar
             </button>
+            {RESTOCK_ITEM_BY_FURNITURE[selectedItem.type] && (
+              <button className="btn btn-primary" onClick={handleRestock}>
+                Restok
+              </button>
+            )}
             <div className="color-swatches" style={{ margin: '0 8px', marginBottom: 0 }} aria-label="Ganti warna furnitur">
               {predefinedColors.map(c => (
                 <button 

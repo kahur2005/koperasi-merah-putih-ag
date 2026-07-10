@@ -1312,6 +1312,27 @@ export const useGameStore = create((set, get) => ({
       return { furniturePositions: newPositions };
     }),
 
+  /** 19b. setFurniturePosition */
+  setFurniturePosition: (id, x, y, rotation = null) =>
+    set((state) => {
+      const isLarge = state.storeSize === 'large';
+      const maxX = isLarge ? 200 : 100;
+      const maxY = isLarge ? 300 : 150;
+
+      const newPositions = state.furniturePositions.map((f) => {
+        if (f.id !== id) return f;
+
+        return {
+          ...f,
+          x: clamp(x, 0, maxX),
+          y: clamp(y, 0, maxY),
+          ...(rotation !== null && rotation !== undefined ? { rotation } : {}),
+        };
+      });
+
+      return { furniturePositions: newPositions };
+    }),
+
   /** 20. rotateFurniture */
   rotateFurniture: (id) =>
     set((state) => {
