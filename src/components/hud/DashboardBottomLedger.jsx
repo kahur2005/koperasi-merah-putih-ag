@@ -10,6 +10,7 @@ function getPersonName(person) {
 
 export default function DashboardBottomLedger() {
   const currentDate = useGameStore((state) => state.currentDate);
+  const gamePhase = useGameStore((state) => state.gamePhase);
   const pendingApplications = useGameStore((state) => state.pendingApplications);
   const pendingLoanRequests = useGameStore((state) => state.pendingLoanRequests);
   const setActiveModal = useGameStore((state) => state.setActiveModal);
@@ -64,7 +65,10 @@ export default function DashboardBottomLedger() {
         </button>
       </div>
 
-      <button className="btn btn-primary btn-endday" onClick={endDay}><span>{UI.AKHIRI_HARI}</span><span className="endday-subtitle">Simulasikan Penjualan</span></button>
+      <button className="btn btn-primary btn-endday" onClick={endDay} disabled={gamePhase !== 'storeOpen'}>
+        <span>{gamePhase === 'storeOpen' ? UI.AKHIRI_HARI : 'Toko Belum Dibuka'}</span>
+        <span className="endday-subtitle">{gamePhase === 'storeOpen' ? 'Simulasikan Penjualan' : 'Selesaikan restok dulu'}</span>
+      </button>
     </section>
   );
 }

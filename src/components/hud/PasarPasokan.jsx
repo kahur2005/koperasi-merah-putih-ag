@@ -5,16 +5,21 @@ import { SUPPLIERS } from '../../constants/gameConstants';
 import { formatRupiah } from '../../utils/formatRupiah';
 
 export default function PasarPasokan() {
+  const gamePhase = useGameStore((s) => s.gamePhase);
   const money = useGameStore((s) => s.money);
   const stock = useGameStore((s) => s.stock);
   const stockCapacity = useGameStore((s) => s.stockCapacity);
   const supplierStockPT = useGameStore((s) => s.supplierStockPT);
   const supplierStockUMKM = useGameStore((s) => s.supplierStockUMKM);
   const supplierPricesUMKM = useGameStore((s) => s.supplierPricesUMKM);
+  const restockFocusItem = useGameStore((s) => s.restockFocusItem);
   const buySupply = useGameStore((s) => s.buySupply);
+  const autoRestockSupply = useGameStore((s) => s.autoRestockSupply);
+  const openStoreForDay = useGameStore((s) => s.openStoreForDay);
   const setActiveModal = useGameStore((s) => s.setActiveModal);
 
   const [activeTab, setActiveTab] = useState('PT'); // 'PT' or 'UMKM'
+  const [buyMode, setBuyMode] = useState('manual'); // 'manual' or 'automatic'
   const [quantities, setQuantities] = useState({ rice: 0, cookingOil: 0, lpgGas: 0 });
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -30,6 +35,10 @@ export default function PasarPasokan() {
 
   const handleBuy = (item) => {
     const qty = quantities[item];
+    if (gamePhase !== 'restockPhase') {
+      setErrorMsg('Pembelian hanya tersedia setelah tutup toko, sebelum hari baru dibuka.');
+      return;
+    }
     if (qty <= 0) return;
 
     const isPT = activeTab === 'PT';
@@ -61,6 +70,29 @@ export default function PasarPasokan() {
     setErrorMsg('');
   };
 
+  const handleAutoRestock = (item) => {
+    if (gamePhase !== 'restockPhase') {
+      setErrorMsg('Pembelian hanya tersedia setelah tutup toko, sebelum hari baru dibuka.');
+      return;
+    }
+
+    const supplierStockForMode = activeTab === 'PT' ? supplierStockPT : supplierStockUMKM;
+    const pricesForMode = activeTab === 'PT' ? SUPPLIERS.PT.prices : supplierPricesUMKM;
+    const needed = Math.max(0, stockCapacity[item] - stock[item]);
+    const affordable = pricesForMode[item] > 0 ? Math.floor(money / pricesForMode[item]) : 0;
+    const quantity = Math.min(needed, supplierStockForMode[item], affordable);
+
+    autoRestockSupply(activeTab, item);
+
+    if (needed <= 0) {
+      setErrorMsg('Stok barang ini sudah penuh.');
+    } else if (quantity < needed) {
+      setErrorMsg('Restok otomatis dilakukan sebagian karena saldo atau stok pemasok terbatas.');
+    } else {
+      setErrorMsg('');
+    }
+  };
+
   const isPT = activeTab === 'PT';
   const supplierStock = isPT ? supplierStockPT : supplierStockUMKM;
   const prices = isPT ? SUPPLIERS.PT.prices : supplierPricesUMKM;
@@ -70,6 +102,10 @@ export default function PasarPasokan() {
     { key: 'cookingOil', name: UI.MINYAK_GORENG },
     { key: 'lpgGas', name: UI.GAS_LPG },
   ];
+  const visibleItems = restockFocusItem
+    ? items.filter((item) => item.key === restockFocusItem)
+    : items;
+  const buyingLocked = gamePhase !== 'restockPhase';
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
@@ -77,6 +113,27 @@ export default function PasarPasokan() {
         <div className="modal-header">
           <h2>{UI.PASAR_PASOKAN}</h2>
           <button className="modal-close" onClick={handleClose}>&times;</button>
+        </div>
+
+        <div className={`info-note ${buyingLocked ? 'warn' : 'good'}`}>
+          {buyingLocked
+            ? 'Toko sedang buka: pembelian hanya tersedia setelah tutup toko.'
+            : 'Fase restok aktif. Isi pasokan, lalu buka hari baru.'}
+        </div>
+
+        <div className="tab-row" style={{ marginBottom: '12px' }}>
+          <button
+            className={`tab-btn ${buyMode === 'manual' ? 'active' : ''}`}
+            onClick={() => { setBuyMode('manual'); setErrorMsg(''); }}
+          >
+            Manual
+          </button>
+          <button
+            className={`tab-btn ${buyMode === 'automatic' ? 'active' : ''}`}
+            onClick={() => { setBuyMode('automatic'); setErrorMsg(''); }}
+          >
+            Otomatis Penuh
+          </button>
         </div>
 
         {/* Supplier Tabs */}
@@ -124,13 +181,15 @@ export default function PasarPasokan() {
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => {
+            {visibleItems.map((item) => {
               const currentStock = stock[item.key];
               const cap = stockCapacity[item.key];
               const price = prices[item.key];
               const avail = supplierStock[item.key];
               const qty = quantities[item.key];
-              const cost = price * qty;
+              const needed = Math.max(0, cap - currentStock);
+              const affordable = price > 0 ? Math.floor(money / price) : 0;
+              const autoQty = Math.min(needed, avail, affordable);
 
               return (
                 <tr key={item.key}>
@@ -139,26 +198,42 @@ export default function PasarPasokan() {
                   <td>{avail} unit</td>
                   <td>{currentStock}/{cap}</td>
                   <td>
-                    <input 
-                      type="number" 
-                      min="0"
-                      max={avail}
-                      value={qty || ''}
-                      onChange={(e) => handleQtyChange(item.key, e.target.value)}
-                      className="form-input"
-                      style={{ padding: '8px', textAlign: 'center' }}
-                      placeholder="0"
-                    />
+                    {buyMode === 'manual' ? (
+                      <input
+                        type="number"
+                        min="0"
+                        max={avail}
+                        value={qty || ''}
+                        onChange={(e) => handleQtyChange(item.key, e.target.value)}
+                        className="form-input"
+                        style={{ padding: '8px', textAlign: 'center' }}
+                        placeholder="0"
+                        disabled={buyingLocked}
+                      />
+                    ) : (
+                      <span style={{ fontWeight: '700' }}>{autoQty}/{needed}</span>
+                    )}
                   </td>
                   <td>
-                    <button 
-                      className="btn btn-primary btn-success" 
-                      style={{ padding: '6px 12px', fontSize: '16px' }}
-                      disabled={qty <= 0 || qty > avail}
-                      onClick={() => handleBuy(item.key)}
-                    >
-                      {UI.BTN_BELI}
-                    </button>
+                    {buyMode === 'manual' ? (
+                      <button
+                        className="btn btn-primary btn-success"
+                        style={{ padding: '6px 12px', fontSize: '16px' }}
+                        disabled={buyingLocked || qty <= 0 || qty > avail}
+                        onClick={() => handleBuy(item.key)}
+                      >
+                        {UI.BTN_BELI}
+                      </button>
+                    ) : (
+                      <button
+                        className="btn btn-primary btn-success"
+                        style={{ padding: '6px 12px', fontSize: '16px' }}
+                        disabled={buyingLocked || autoQty <= 0}
+                        onClick={() => handleAutoRestock(item.key)}
+                      >
+                        Isi Penuh
+                      </button>
+                    )}
                   </td>
                 </tr>
               );
@@ -172,15 +247,23 @@ export default function PasarPasokan() {
             <span>Saldo Kas Koperasi: </span>
             <span>{formatRupiah(money)}</span>
           </div>
-          {Object.values(quantities).some(q => q > 0) && (
+          {buyMode === 'manual' && Object.values(quantities).some(q => q > 0) && (
             <div style={{ textAlign: 'right' }}>
               <span>Estimasi Total: </span>
               <span>
-                {formatRupiah(items.reduce((acc, it) => acc + (prices[it.key] * quantities[it.key]), 0))}
+                {formatRupiah(visibleItems.reduce((acc, it) => acc + (prices[it.key] * quantities[it.key]), 0))}
               </span>
             </div>
           )}
         </div>
+
+        {gamePhase === 'restockPhase' && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+            <button className="btn btn-primary" onClick={openStoreForDay}>
+              Buka Hari Baru
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

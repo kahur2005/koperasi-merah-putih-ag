@@ -4,22 +4,22 @@ import { getPrimaryActionLabel, getStoryTransition } from './introFlow';
 
 const STORY_BEATS = [
   {
-    speaker: 'Narator Desa',
+    speaker: 'Presiden RI',
     title: 'Koperasi di Persimpangan',
     text: 'Di sebuah desa yang sedang tumbuh, koperasi menjadi tempat warga berharap harga tetap adil dan usaha kecil tetap hidup.',
-    avatar: '/assets/images/ui/intro_narrator.png',
+    avatar: '/assets/images/pixel_prabowo.png',
   },
   {
-    speaker: 'Bu Siti',
+    speaker: 'Presiden RI',
     title: 'Suara UMKM',
     text: 'Kalau stok koperasi kosong, warga kembali ke ritel besar. Kalau harga terlalu tinggi, anggota mulai kehilangan percaya.',
-    avatar: '/assets/avatars/female_1_siti.jpg',
+    avatar: '/assets/images/pixel_prabowo.png',
   },
   {
-    speaker: 'Pak Budi',
+    speaker: 'Presiden RI',
     title: 'Tugas Pengurus Baru',
     text: 'Kelola pasokan, bantu anggota, atur harga, dan bangun toko yang bisa membuat desa bergerak bersama.',
-    avatar: '/assets/avatars/male_1_budi.jpg',
+    avatar: '/assets/images/pixel_prabowo.png',
   },
 ];
 

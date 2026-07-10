@@ -30,7 +30,7 @@ export default function BagiHasil() {
 
   const handleConfirm = () => {
     processBagiHasil(percent);
-    // After Bagi Hasil is completed, call startNewDay to advance to next day
+    // After Bagi Hasil is completed, prepare the next day's restock phase.
     startNewDay();
   };
 
@@ -100,7 +100,7 @@ export default function BagiHasil() {
           onClick={handleConfirm}
           disabled={money < totalCost}
         >
-          {money < totalCost ? 'Saldo Kas Tidak Cukup' : UI.BTN_KONFIRMASI}
+          {money < totalCost ? 'Saldo Kas Tidak Cukup' : 'Konfirmasi & Restok Pasokan'}
         </button>
       </div>
     </div>

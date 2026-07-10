@@ -1,15 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useGameStore } from '../../store/gameStore';
 import StoreFloor from './StoreFloor';
 import Furniture from './Furniture';
 import TokoFurnitur from './TokoFurnitur';
+import PasarPasokan from '../hud/PasarPasokan';
+import { clampStorePosition, isWallFurniture } from '../../utils/storeBounds.js';
 
 export default function StoreScene() {
   const furniturePositions = useGameStore((s) => s.furniturePositions);
   const placementMode = useGameStore((s) => s.placementMode);
   const confirmPlacement = useGameStore((s) => s.confirmPlacement);
+  const activeModal = useGameStore((s) => s.activeModal);
+  const cancelPlacement = useGameStore((s) => s.cancelPlacement);
+  const moveFurniture = useGameStore((s) => s.moveFurniture);
+  const rotateFurniture = useGameStore((s) => s.rotateFurniture);
+  const deleteFurniture = useGameStore((s) => s.deleteFurniture);
+  const setFurniturePosition = useGameStore((s) => s.setFurniturePosition);
 
   const storeSize = useGameStore((s) => s.storeSize);
   const updatePlacement = useGameStore((s) => s.updatePlacement);
@@ -22,11 +30,11 @@ export default function StoreScene() {
     setSelectedId(id);
   };
 
-  const getSnappedPosition = (point) => {
+  const getSnappedPosition = (point, type = placementMode?.type) => {
     let xWorld = point.x;
     let zWorld = point.z;
     
-    if (placementMode?.type === 'prabowoPicture') {
+    if (isWallFurniture(type)) {
       const width = storeSize === 'large' ? 20 : 10;
       const depth = storeSize === 'large' ? 30 : 15;
       
@@ -55,44 +63,127 @@ export default function StoreScene() {
           zWorld = zWorld > 0 ? 3 : -3;
         }
       }
-      return { 
+      const clamped = clampStorePosition({
         x: Math.round(xWorld * 10 + 50), 
         y: Math.round(zWorld * 10 + 50),
+      }, storeSize, type);
+      return {
+        ...clamped,
         rot
       };
     }
     
-    return {
+    return clampStorePosition({
       x: Math.round(xWorld * 10 + 50),
       y: Math.round(zWorld * 10 + 50)
-    };
+    }, storeSize, type);
+  };
+
+  const confirmPlacementAtPoint = (point) => {
+    if (!placementMode) return;
+    const snapped = getSnappedPosition(point, placementMode.type);
+    if (isWallFurniture(placementMode.type) && placementMode.rotation !== snapped.rot) {
+      updatePlacement({ rotation: snapped.rot });
+    }
+    confirmPlacement(snapped.x, snapped.y);
+  };
+
+  const moveSelectedToPoint = (point) => {
+    const selectedItem = furniturePositions.find((f) => f.id === selectedId);
+    if (!selectedItem) return;
+
+    const snapped = getSnappedPosition(point, selectedItem.type);
+    setFurniturePosition(selectedItem.id, snapped.x, snapped.y, snapped.rot);
   };
 
   const handleFloorPointerMove = (e) => {
     if (!placementMode) return;
     const snapped = getSnappedPosition(e.point);
     setGhostPos({ x: snapped.x, y: snapped.y });
-    if (placementMode.type === 'prabowoPicture' && placementMode.rotation !== snapped.rot) {
+    if (isWallFurniture(placementMode.type) && placementMode.rotation !== snapped.rot) {
       updatePlacement({ rotation: snapped.rot });
     }
   };
 
   const handleFloorClick = (e) => {
-    if (!placementMode) {
-      setSelectedId(null);
+    e.stopPropagation();
+    if (placementMode) {
+      confirmPlacementAtPoint(e.point);
+      return;
     }
+    if (selectedId) {
+      moveSelectedToPoint(e.point);
+      return;
+    }
+    setSelectedId(null);
   };
 
   const handleFloorDoubleClick = (e) => {
     if (placementMode) {
       e.stopPropagation();
-      const snapped = getSnappedPosition(e.point);
-      if (placementMode.type === 'prabowoPicture' && placementMode.rotation !== snapped.rot) {
-        updatePlacement({ rotation: snapped.rot });
-      }
-      confirmPlacement(snapped.x, snapped.y);
+      confirmPlacementAtPoint(e.point);
     }
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const target = event.target;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return;
+      if (activeModal) return;
+
+      const key = event.key.toLowerCase();
+      const moveStep = event.shiftKey ? 10 : 5;
+
+      if (placementMode) {
+        if (key === 'escape') {
+          event.preventDefault();
+          cancelPlacement();
+        } else if (key === 'r') {
+          event.preventDefault();
+          updatePlacement({ rotation: (placementMode.rotation + 90) % 360 });
+        }
+        return;
+      }
+
+      if (!selectedId) return;
+
+      if (key === 'escape') {
+        event.preventDefault();
+        setSelectedId(null);
+      } else if (key === 'r') {
+        event.preventDefault();
+        rotateFurniture(selectedId);
+      } else if (key === 'delete' || key === 'backspace') {
+        event.preventDefault();
+        deleteFurniture(selectedId);
+        setSelectedId(null);
+      } else if (key === 'arrowup' || key === 'w') {
+        event.preventDefault();
+        moveFurniture(selectedId, 0, -moveStep);
+      } else if (key === 'arrowdown' || key === 's') {
+        event.preventDefault();
+        moveFurniture(selectedId, 0, moveStep);
+      } else if (key === 'arrowleft' || key === 'a') {
+        event.preventDefault();
+        moveFurniture(selectedId, -moveStep, 0);
+      } else if (key === 'arrowright' || key === 'd') {
+        event.preventDefault();
+        moveFurniture(selectedId, moveStep, 0);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    cancelPlacement,
+    activeModal,
+    deleteFurniture,
+    moveFurniture,
+    placementMode,
+    rotateFurniture,
+    selectedId,
+    updatePlacement,
+  ]);
 
   return (
     <div className="three-container" style={{ width: '100vw', height: '100vh', display: 'flex' }}>
@@ -101,10 +192,9 @@ export default function StoreScene() {
         <Canvas 
           camera={{ position: [10, 12, 14], fov: 45 }}
           shadows
-          onClick={handleFloorClick}
           onDoubleClick={handleFloorDoubleClick}
         >
-          <color attach="background" args={['#eef4e8']} />
+          <color attach="background" args={['#fdd798']} />
           
           {/* Lighting */}
           <ambientLight intensity={0.75} />
@@ -165,6 +255,7 @@ export default function StoreScene() {
 
       {/* HTML overlay sidebar */}
       <TokoFurnitur selectedId={selectedId} setSelectedId={setSelectedId} />
+      {activeModal === 'pasar' && <PasarPasokan />}
     </div>
   );
 }

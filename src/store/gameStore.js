@@ -11,9 +11,10 @@ import {
   HAPPINESS,
   EVENTS,
   WIN_CONDITIONS,
-} from '../constants/gameConstants';
-import { NPC_DATABASE } from '../data/npcData';
-import { randomInt, pickRandom, shuffleArray, seededRandom } from '../utils/random';
+} from '../constants/gameConstants.js';
+import { NPC_DATABASE } from '../data/npcData.js';
+import { randomInt, pickRandom, shuffleArray, seededRandom } from '../utils/random.js';
+import { clampStorePosition } from '../utils/storeBounds.js';
 
 // ─── Helper: clamp happiness between 0 and 100 ────────────────────────────────
 const clamp = (val, min = 0, max = 100) => Math.max(min, Math.min(max, val));
@@ -42,6 +43,12 @@ const storyMomentPatch = (state, id, moment) => {
     storyQueue: nextQueue,
   };
 };
+
+const createStoryMoment = (id, moment) => ({
+  id,
+  tone: 'normal',
+  ...moment,
+});
 
 // ─── Initial state factory ────────────────────────────────────────────────────
 const createInitialState = () => ({
@@ -104,8 +111,10 @@ const createInitialState = () => ({
   krisisDaysRemaining: 0,
 
   // UI state
+  gamePhase: 'storeOpen',
   currentView: 'dashboard',
   activeModal: null,
+  restockFocusItem: null,
   storyIntroSeen: false,
   notifications: [],
   selectedNpc: null,
@@ -114,6 +123,7 @@ const createInitialState = () => ({
   currentStoryMoment: null,
   storyQueue: [],
   storyFlags: {},
+  pendingMorningStoryMoments: [],
 
   // Statistics
   statistics: {
@@ -139,9 +149,37 @@ export const useGameStore = create((set, get) => ({
   setView: (view) => set({ currentView: view }),
 
   /** 2. setActiveModal */
-  setActiveModal: (modal) => set({ activeModal: modal }),
+  setActiveModal: (modal) => set({
+    activeModal: modal,
+    ...(modal !== 'pasar' ? { restockFocusItem: null } : {}),
+  }),
 
-  /** 2b. completeStoryIntro */
+  /** 2a. openRestockPanel */
+  openRestockPanel: (item = null) => set({ activeModal: 'pasar', restockFocusItem: item }),
+
+  /** 2b. openStoreForDay */
+  openStoreForDay: () =>
+    set((state) => {
+      const pendingMoments = state.pendingMorningStoryMoments || [];
+      const [firstMoment, ...remainingMoments] = pendingMoments;
+
+      return {
+        gamePhase: 'storeOpen',
+        activeModal: null,
+        restockFocusItem: null,
+        pendingMorningStoryMoments: [],
+        ...(firstMoment
+          ? {
+              currentStoryMoment: state.currentStoryMoment || firstMoment,
+              storyQueue: state.currentStoryMoment
+                ? [...state.storyQueue, ...pendingMoments]
+                : [...state.storyQueue, ...remainingMoments],
+            }
+          : {}),
+      };
+    }),
+
+  /** 2c. completeStoryIntro */
   completeStoryIntro: () =>
     set((state) => ({
       storyIntroSeen: true,
@@ -328,6 +366,11 @@ export const useGameStore = create((set, get) => ({
   /** 11. buySupply */
   buySupply: (supplier, item, quantity) =>
     set((state) => {
+      if (state.gamePhase !== 'restockPhase') return {};
+      if (!Number.isInteger(quantity) || quantity <= 0) return {};
+      if (!state.stock[item] && state.stock[item] !== 0) return {};
+      if (supplier !== 'PT' && supplier !== 'UMKM') return {};
+
       // Determine supplier stock & prices
       const isPT = supplier === 'PT';
       const supplierStock = isPT ? state.supplierStockPT : state.supplierStockUMKM;
@@ -383,6 +426,76 @@ export const useGameStore = create((set, get) => ({
               actionModal: 'harga',
             })
           : {}),
+      };
+    }),
+
+  /** 11b. autoRestockSupply */
+  autoRestockSupply: (supplier, item) =>
+    set((state) => {
+      if (state.gamePhase !== 'restockPhase') return {};
+      if (!state.stock[item] && state.stock[item] !== 0) return {};
+      if (supplier !== 'PT' && supplier !== 'UMKM') return {};
+
+      const isPT = supplier === 'PT';
+      const supplierStock = isPT ? state.supplierStockPT : state.supplierStockUMKM;
+      const prices = isPT ? SUPPLIERS.PT.prices : state.supplierPricesUMKM;
+      const unitPrice = prices[item];
+      const needed = Math.max(0, state.stockCapacity[item] - state.stock[item]);
+      const affordable = unitPrice > 0 ? Math.floor(state.money / unitPrice) : 0;
+      const quantity = Math.min(needed, supplierStock[item] || 0, affordable);
+
+      if (quantity <= 0) {
+        return {
+          notifications: [
+            ...state.notifications,
+            {
+              id: uid(),
+              text: needed <= 0
+                ? 'Stok sudah penuh. Tidak perlu restok otomatis.'
+                : 'Restok otomatis gagal: saldo, kapasitas, atau stok pemasok tidak cukup.',
+            },
+          ],
+        };
+      }
+
+      const totalCost = unitPrice * quantity;
+      const newStock = { ...state.stock, [item]: state.stock[item] + quantity };
+      const newSupplierStock = { ...supplierStock, [item]: supplierStock[item] - quantity };
+      const supplierStockKey = isPT ? 'supplierStockPT' : 'supplierStockUMKM';
+      const priceKey = isPT ? 'lastPT' : 'lastUMKM';
+      const newPurchasePrices = {
+        ...state.purchasePrices,
+        [item]: {
+          ...state.purchasePrices[item],
+          [priceKey]: unitPrice,
+        },
+      };
+
+      const happinessDelta = isPT ? -2 : 2;
+      const newBoughtFromUMKM = isPT ? state.boughtFromUMKMToday : true;
+      const fullyRestocked = quantity === needed;
+      const itemLabel = {
+        rice: 'beras',
+        cookingOil: 'minyak goreng',
+        lpgGas: 'gas LPG',
+      }[item] || 'barang';
+
+      return {
+        money: state.money - totalCost,
+        stock: newStock,
+        [supplierStockKey]: newSupplierStock,
+        purchasePrices: newPurchasePrices,
+        happiness: clamp(state.happiness + happinessDelta),
+        boughtFromUMKMToday: newBoughtFromUMKM,
+        notifications: [
+          ...state.notifications,
+          {
+            id: uid(),
+            text: fullyRestocked
+              ? `Restok otomatis mengisi penuh ${itemLabel}: ${quantity} unit.`
+              : `Restok otomatis hanya membeli ${quantity}/${needed} unit ${itemLabel} karena batas saldo atau stok pemasok.`,
+          },
+        ],
       };
     }),
 
@@ -460,8 +573,7 @@ export const useGameStore = create((set, get) => ({
         {
           id: uid(),
           type,
-          x,
-          y,
+          ...clampStorePosition({ x, y }, state.storeSize, type),
           rotation,
           color,
         },
@@ -684,6 +796,7 @@ export const useGameStore = create((set, get) => ({
         krisisDaysRemaining: newKrisisDaysRemaining,
         dayReport,
         activeModal: gameOver ? 'gameOver' : modalToShow,
+        gamePhase: gameOver ? state.gamePhase : 'closingReport',
         currentDate: newDate,
         dayNumber: newDayNumber,
         gameOver,
@@ -726,6 +839,7 @@ export const useGameStore = create((set, get) => ({
       const today = dayjs(state.currentDate);
       const dayOfMonth = today.date();
       const isFirstOfMonth = dayOfMonth === 1;
+      const morningStoryEvents = [];
 
       // ── a. Reset supplier stocks ──
       const newSupplierStockPT = { ...SUPPLIERS.PT.dailyStock };
@@ -755,6 +869,14 @@ export const useGameStore = create((set, get) => ({
         ...state.pendingApplications,
         ...newApplicants,
       ];
+      if (newApplicants.length > 0) {
+        morningStoryEvents.push({
+          type: 'memberApplication',
+          dayNumber: state.dayNumber,
+          applicant: newApplicants[0],
+          totalApplicants: newApplicants.length,
+        });
+      }
 
       // ── d. Check loanSchedule for today's loan requests ──
       let newPendingLoanRequests = [...state.pendingLoanRequests];
@@ -782,7 +904,7 @@ export const useGameStore = create((set, get) => ({
             // Check if we hit the limit of requests on the dashboard
             const MAX_REQUESTS = 2; // Keep max loan requests at 2 for the HUD
             if (newPendingLoanRequests.length < MAX_REQUESTS) {
-              newPendingLoanRequests.push({
+              const loanRequest = {
                 id: uid(),
                 memberId: entry.memberId,
                 memberName: entry.memberName,
@@ -794,6 +916,12 @@ export const useGameStore = create((set, get) => ({
                 alasan: entry.alasan,
                 barangTerkait: entry.barangTerkait || null,
                 requestDate: state.currentDate,
+              };
+              newPendingLoanRequests.push(loanRequest);
+              morningStoryEvents.push({
+                type: 'loanRequest',
+                dayNumber: state.dayNumber,
+                loan: loanRequest,
               });
               // Mark member as having applied
               if (member) member.hasAppliedForLoan = true;
@@ -953,6 +1081,10 @@ export const useGameStore = create((set, get) => ({
           id: uid(),
           text: '⚠️ KRISIS EKONOMI! Harga-harga melonjak selama 7 hari. Jual di bawah harga beli untuk menjaga kepuasan!',
         });
+        morningStoryEvents.push({
+          type: 'krisisEkonomi',
+          dayNumber: state.dayNumber,
+        });
       }
 
       // Activate Gagal Panen notification and price hike if today
@@ -973,50 +1105,20 @@ export const useGameStore = create((set, get) => ({
           id: uid(),
           text: '🌾 GAGAL PANEN! Harga beras UMKM naik 50%. Beli dari UMKM hari ini untuk mendukung petani!',
         });
+        morningStoryEvents.push({
+          type: 'gagalPanen',
+          dayNumber: state.dayNumber,
+        });
       }
 
-      let storyPatch = {};
-      if (state.dayNumber === newKrisisStartDay) {
-        storyPatch = storyMomentPatch(state, `krisis_${state.dayNumber}`, {
-          speaker: 'Dewan Pengawas',
-          title: 'Krisis ekonomi dimulai',
-          text: 'Harga sedang menekan warga. Selama krisis, turunkan margin agar kebahagiaan tidak runtuh.',
-          avatar: '/assets/avatars/female_2_dewi.jpg',
-          tone: 'danger',
-          actionLabel: 'Atur Harga',
-          actionModal: 'harga',
-        });
-      } else if (state.dayNumber === newGagalPanenDay) {
-        storyPatch = storyMomentPatch(state, `gagal_panen_${state.dayNumber}`, {
-          speaker: 'Pak Budi',
-          title: 'Sawah desa gagal panen',
-          text: 'Petani butuh koperasi hari ini. Beli dari UMKM agar dukungan terasa langsung dan warga tetap percaya.',
-          avatar: '/assets/avatars/male_1_budi.jpg',
-          tone: 'warning',
-          actionLabel: 'Buka Pasar',
-          actionModal: 'pasar',
-        });
-      } else if (newPendingLoanRequests.length > state.pendingLoanRequests.length) {
-        const loanReq = newPendingLoanRequests[newPendingLoanRequests.length - 1];
-        storyPatch = storyMomentPatch(state, `loan_request_${state.dayNumber}`, {
-          speaker: displayName(loanReq),
-          title: 'Pengajuan modal usaha',
-          text: `${displayName(loanReq)} mengajukan pinjaman untuk ${loanReq.alasan}. Pilih bunga yang membantu usaha tetap hidup.`,
-          avatar: loanReq.avatar || '/assets/avatars/male_2_ahmad.jpg',
-          actionLabel: 'Tinjau Pinjaman',
-          actionModal: 'pinjamanAktifList',
-        });
-      } else if (newPendingApplications.length > state.pendingApplications.length) {
-        const applicant = newPendingApplications[newPendingApplications.length - 1];
-        storyPatch = storyMomentPatch(state, `application_${state.dayNumber}`, {
-          speaker: displayName(applicant),
-          title: 'Calon anggota menunggu',
-          text: 'Saya ingin ikut koperasi supaya simpanan dan kebutuhan usaha lebih jelas. Mohon ditinjau, Pengurus.',
-          avatar: applicant.avatar,
-          actionLabel: 'Lihat Anggota',
-          actionModal: 'pinjamanAktifList',
-        });
-      }
+      const pendingMorningStoryMoments = buildMorningStoryMoments(morningStoryEvents);
+      let storyPatch = storyMomentPatch(state, `restock_${state.dayNumber}`, {
+        speaker: 'Bu Siti',
+        title: 'Waktunya restok pasokan',
+        text: 'Toko sudah tutup. Sebelum hari baru dibuka, isi kembali beras, minyak, dan gas LPG lewat pembelian manual atau otomatis agar warga tidak kecewa besok.',
+        avatar: '/assets/avatars/female_1_siti.jpg',
+        tone: 'success',
+      });
 
       // Clean up expired events
       if (newKrisisDaysRemaining <= 0) {
@@ -1096,7 +1198,10 @@ export const useGameStore = create((set, get) => ({
         activeEvents: newActiveEvents,
         eventLog: newEventLog,
         boughtFromUMKMToday: resetBoughtFromUMKM,
-        activeModal: gameOver ? 'gameOver' : null,
+        activeModal: gameOver ? 'gameOver' : 'pasar',
+        gamePhase: gameOver ? state.gamePhase : 'restockPhase',
+        restockFocusItem: null,
+        pendingMorningStoryMoments,
         happiness: newHappiness,
         statistics: statsUpdate,
         gameOver,
@@ -1161,19 +1266,33 @@ export const useGameStore = create((set, get) => ({
       const item = state.furniturePositions.find((f) => f.id === id);
       if (!item) return {};
 
-      // Bounds checking based on store size
-      // Small: 10m x 15m (posX: -5 to 5, posZ: -7.5 to 7.5) -> (x: 0 to 100, y: 0 to 150)
-      const isLarge = state.storeSize === 'large';
-      const maxX = isLarge ? 200 : 100;
-      const maxY = isLarge ? 300 : 150;
-
       const newPositions = state.furniturePositions.map((f) => {
         if (f.id === id) {
-          const nextX = clamp(f.x + dx, 0, maxX);
-          const nextY = clamp(f.y + dy, 0, maxY);
-          return { ...f, x: nextX, y: nextY };
+          const nextPosition = clampStorePosition(
+            { x: f.x + dx, y: f.y + dy },
+            state.storeSize,
+            f.type
+          );
+          return { ...f, ...nextPosition };
         }
         return f;
+      });
+
+      return { furniturePositions: newPositions };
+    }),
+
+  /** 19b. setFurniturePosition */
+  setFurniturePosition: (id, x, y, rotation = null) =>
+    set((state) => {
+      const newPositions = state.furniturePositions.map((f) => {
+        if (f.id !== id) return f;
+        const nextPosition = clampStorePosition({ x, y }, state.storeSize, f.type);
+
+        return {
+          ...f,
+          ...nextPosition,
+          ...(rotation !== null && rotation !== undefined ? { rotation } : {}),
+        };
       });
 
       return { furniturePositions: newPositions };
@@ -1296,4 +1415,70 @@ function generateMonthlyLoanSchedule(monthStart, members, activeLoans, currentDa
   }
 
   return schedule;
+}
+
+function buildMorningStoryMoments(storyEvents) {
+  const moments = [];
+  const priority = {
+    krisisEkonomi: 10,
+    gagalPanen: 20,
+    loanRequest: 30,
+    memberApplication: 40,
+  };
+
+  [...storyEvents].sort((a, b) => (priority[a.type] || 99) - (priority[b.type] || 99)).forEach((event) => {
+    if (event.type === 'krisisEkonomi') {
+      moments.push(createStoryMoment(`krisis_${event.dayNumber}`, {
+        speaker: 'Dewan Pengawas',
+        title: 'Krisis ekonomi dimulai',
+        text: 'Harga sedang menekan warga. Selama krisis, turunkan margin agar kebahagiaan tidak runtuh.',
+        avatar: '/assets/avatars/female_2_dewi.jpg',
+        tone: 'danger',
+        actionLabel: 'Atur Harga',
+        actionModal: 'harga',
+      }));
+    } else if (event.type === 'gagalPanen') {
+      moments.push(createStoryMoment(`gagal_panen_${event.dayNumber}`, {
+        speaker: 'Pak Budi',
+        title: 'Sawah desa gagal panen',
+        text: 'Petani butuh koperasi hari ini. Beli dari UMKM agar dukungan terasa langsung dan warga tetap percaya.',
+        avatar: '/assets/avatars/male_1_budi.jpg',
+        tone: 'warning',
+        actionLabel: 'Buka Pasar',
+        actionModal: 'pasar',
+      }));
+    } else if (event.type === 'loanRequest') {
+      moments.push(createStoryMoment(`loan_request_${event.dayNumber}_${event.loan.id}`, {
+        speaker: displayName(event.loan),
+        title: 'Pengajuan modal usaha',
+        text: `${displayName(event.loan)} mengajukan pinjaman untuk ${event.loan.alasan}. Pilih bunga yang membantu usaha tetap hidup.`,
+        avatar: event.loan.avatar || '/assets/avatars/male_2_ahmad.jpg',
+        actionLabel: 'Tinjau Pinjaman',
+        actionModal: 'pinjamanAktifList',
+      }));
+    } else if (event.type === 'memberApplication') {
+      const extraApplicants = Math.max(0, (event.totalApplicants || 1) - 1);
+      const extraText = extraApplicants > 0
+        ? ` dan ${extraApplicants} warga lain juga menunggu di daftar calon anggota`
+        : '';
+      moments.push(createStoryMoment(`application_intro_${event.dayNumber}_${event.applicant.id}`, {
+        speaker: 'Bu Siti',
+        title: 'Ada warga ingin bergabung',
+        text: `${displayName(event.applicant)} datang mengajukan diri sebagai anggota koperasi${extraText}. Tinjau profil calon anggota sebelum diterima, karena anggota baru akan ikut menyetor simpanan dan bisa mengajukan pinjaman.`,
+        avatar: '/assets/avatars/female_1_siti.jpg',
+        actionLabel: 'Lanjut',
+        actionModal: null,
+      }));
+      moments.push(createStoryMoment(`application_${event.dayNumber}_${event.applicant.id}`, {
+        speaker: displayName(event.applicant),
+        title: 'Calon anggota menunggu',
+        text: 'Saya ingin ikut koperasi supaya simpanan dan kebutuhan usaha lebih jelas. Mohon ditinjau, Pengurus.',
+        avatar: event.applicant.avatar,
+        actionLabel: 'Lihat Anggota',
+        actionModal: 'pinjamanAktifList',
+      }));
+    }
+  });
+
+  return moments;
 }
