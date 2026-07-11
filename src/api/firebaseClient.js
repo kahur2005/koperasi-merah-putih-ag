@@ -7,10 +7,13 @@ import {
 } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  // Firebase web config is public client configuration. The fallbacks keep
+  // Google login working on Cloud Run Docker builds where Vite env injection
+  // can be unavailable.
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDQ-g1c8bTykrqYIub2buQo8SZlwrJuers',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'koperasi-merah-putih-c76b5.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'koperasi-merah-putih-c76b5',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:707690022219:web:e616acdb52a7ba8c5414ce',
 };
 
 const isFirebaseConfigured = Object.values(firebaseConfig).every(Boolean);
