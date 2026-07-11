@@ -9,8 +9,10 @@ import AuthScreen from './components/auth/AuthScreen';
 import GameEntryScreen from './components/auth/GameEntryScreen';
 import ConfirmNewGameModal from './components/auth/ConfirmNewGameModal';
 import SettingsModal from './components/auth/SettingsModal';
+import AudioSettingsModal from './components/auth/AudioSettingsModal';
 import { authSaveClient } from './api/authSaveClient';
 import { hasFirebaseConfig, signInWithGoogleAndGetIdToken, signOutFromFirebase } from './api/firebaseClient';
+import { useGameAudio } from './audio/useGameAudio';
 import './index.css';
 
 const NOTIFICATION_AUTO_CLOSE_MS = 4000;
@@ -59,14 +61,25 @@ export default function App() {
   const [saves, setSaves] = useState({ auto: null, manual: null });
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [manualSaving, setManualSaving] = useState(false);
   const saveTimerRef = useRef(null);
   const tokenRef = useRef(token);
   const appPhaseRef = useRef(appPhase);
+  const previousStoryMomentIdRef = useRef(null);
+  const previousIntroVisibleRef = useRef(false);
+  const {
+    volumes,
+    setBgmVolume,
+    setSfxVolume,
+    playClick,
+    playNarrativePopup,
+  } = useGameAudio();
 
   const currentView = useGameStore((s) => s.currentView);
   const storyIntroSeen = useGameStore((s) => s.storyIntroSeen);
+  const currentStoryMoment = useGameStore((s) => s.currentStoryMoment);
   const notifications = useGameStore((s) => s.notifications);
   const dismissNotification = useGameStore((s) => s.dismissNotification);
   const startNewGame = useGameStore((s) => s.startNewGame);
@@ -79,6 +92,37 @@ export default function App() {
   useEffect(() => {
     appPhaseRef.current = appPhase;
   }, [appPhase]);
+
+  useEffect(() => {
+    const handleClick = (event) => {
+      const clickable = event.target.closest('button, [role="button"]');
+      if (!clickable || !clickable.closest('.app')) return;
+      if (clickable.disabled || clickable.getAttribute('aria-disabled') === 'true') return;
+      playClick();
+    };
+
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [playClick]);
+
+  useEffect(() => {
+    const introVisible = appPhase === 'game' && !storyIntroSeen;
+    if (introVisible && !previousIntroVisibleRef.current) {
+      playNarrativePopup();
+    }
+    previousIntroVisibleRef.current = introVisible;
+  }, [appPhase, storyIntroSeen, playNarrativePopup]);
+
+  useEffect(() => {
+    const storyMomentId = appPhase === 'game' && storyIntroSeen && currentStoryMoment
+      ? currentStoryMoment.id || currentStoryMoment.title
+      : null;
+
+    if (storyMomentId && storyMomentId !== previousStoryMomentIdRef.current) {
+      playNarrativePopup();
+    }
+    previousStoryMomentIdRef.current = storyMomentId;
+  }, [appPhase, storyIntroSeen, currentStoryMoment, playNarrativePopup]);
 
   const persistGameState = useCallback(async (saveName = 'Auto Save') => {
     const activeToken = tokenRef.current;
@@ -285,8 +329,17 @@ export default function App() {
             }}
             onSubmit={handleAuthSubmit}
             onGoogleLogin={handleGoogleLogin}
+            onOpenAudioSettings={() => setShowAudioSettings(true)}
           />
         </AnimatedPage>
+        {showAudioSettings && (
+          <AudioSettingsModal
+            volumes={volumes}
+            onBgmVolumeChange={setBgmVolume}
+            onSfxVolumeChange={setSfxVolume}
+            onClose={() => setShowAudioSettings(false)}
+          />
+        )}
       </div>
     );
   }

@@ -9,6 +9,7 @@ export default function AuthScreen({
   onModeChange,
   onSubmit,
   onGoogleLogin,
+  onOpenAudioSettings,
 }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -21,6 +22,16 @@ export default function AuthScreen({
 
   return (
     <main className="auth-shell">
+      <button
+        className="auth-audio-settings-btn"
+        type="button"
+        onClick={onOpenAudioSettings}
+        title="Audio settings"
+        aria-label="Audio settings"
+      >
+        Audio
+      </button>
+
       <section className="auth-card glass-card">
         <div className="auth-brand">
           <span>Koperasi Merah Putih</span>
