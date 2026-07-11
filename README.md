@@ -13,6 +13,52 @@ A browser-based cooperative village store management game for the Kemenkop hacka
 - Narrative cards, BGM, SFX, and audio volume settings.
 - Cloud Run ready with Cloud SQL support.
 
+## Gameplay
+
+The game follows the work rhythm of a village cooperative manager. The player starts with an introduction narrative, enters the 3D store, places required furniture such as racks and cashier desks, then returns to the main dashboard to restock the store before opening for customers.
+
+### Core Loop
+
+1. Set up the store by placing furniture in the 3D Koperasi room.
+2. Restock products from the Pasar/Pasokan screen.
+3. Open the store and choose either Manager Mode or daily simulation.
+4. Serve customers, sell products, and manage inventory.
+5. End the day and review the daily sales report.
+6. Move to the next day, restock again, and continue improving the cooperative.
+
+Buying supplies is only available during the restock phase. Players can buy manually by choosing quantities, or use automatic restock to fill stock up to capacity when money and supplier stock allow it.
+
+### Manager Mode
+
+Manager Mode is a 3D serving session where customers ask for products such as rice, cooking oil, or LPG gas. The player must click the matching rack/product to serve the customer.
+
+- Each session has a 60-second timer.
+- Customer count scales with the number of cashier desks.
+- Correct service sells one item and adds revenue.
+- Wrong clicks do not sell the item.
+- Empty stock makes customers leave disappointed.
+- Served customers can become calon anggota koperasi.
+
+Players can also choose simulation mode after the feature is unlocked, which resolves the day without manually serving each customer.
+
+### Members, Loans, And Happiness
+
+Customers may apply to become cooperative members. The player can inspect applicants, approve or decline them, and later handle member loan requests. Approved loans reduce cash upfront but can help members and return repayments over time.
+
+Village happiness changes based on management choices, including:
+
+- buying from PT or UMKM suppliers.
+- setting fair or expensive selling prices.
+- keeping key goods in stock.
+- responding to special events such as crisis or failed harvest.
+- choosing monthly member contribution levels.
+
+Monthly meetings let the player choose low, normal, or high member contributions. Low contributions improve happiness but reduce loan capacity, while high contributions increase cooperative funds but can reduce happiness and cause members to leave.
+
+### Goal
+
+The player is trying to grow a healthy cooperative by balancing money, stock, member growth, loan support, and village happiness. The challenge is not only earning profit, but keeping the cooperative useful and trusted by the village.
+
 ## Tech Stack
 
 - Frontend: React, Vite, Zustand, Three.js, React Three Fiber.
@@ -136,4 +182,3 @@ database/postgres/   PostgreSQL migration and connection test helpers
 public/assets/       Images, audio, textures, fonts, and static assets
 docs/                Setup and deployment guides
 ```
-
